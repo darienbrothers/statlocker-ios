@@ -41,7 +41,7 @@ class AuthService: AuthServiceProtocol, ObservableObject {
     }
     
     private func setupAuthStateListener() {
-        _ = auth.addStateDidChangeListener { [weak self] _, user in
+        auth.addStateDidChangeListener { [weak self] _, user in
             DispatchQueue.main.async {
                 self?.currentUser = user
                 self?.isAuthenticated = user != nil
@@ -77,7 +77,7 @@ class AuthService: AuthServiceProtocol, ObservableObject {
     func signInWithGoogle() async throws -> User {
         print("[StatLocker][Auth] Starting Google Sign In")
         
-        guard let presentingViewController = await UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }.first?.windows.first?.rootViewController else {
+        guard let presentingViewController = UIApplication.shared.windows.first?.rootViewController else {
             throw AuthError.noPresentingViewController
         }
         
@@ -140,7 +140,7 @@ class AuthService: AuthServiceProtocol, ObservableObject {
 private class AppleSignInDelegate: NSObject, ASAuthorizationControllerDelegate, ASAuthorizationControllerPresentationContextProviding {
     private let completion: (Result<User, Error>) -> Void
     
-    @MainActor init(completion: @escaping (Result<User, Error>) -> Void) {
+    init(completion: @escaping (Result<User, Error>) -> Void) {
         self.completion = completion
     }
     
@@ -152,7 +152,7 @@ private class AppleSignInDelegate: NSObject, ASAuthorizationControllerDelegate, 
             return
         }
         
-        let credential = OAuthProvider.credential(withProviderID: "apple.com", idToken: identityTokenString)
+        let credential = OAuthProvider.credential(withProviderID: "apple.com", idToken: identityTokenString, rawNonce: nil)
         
         Task {
             do {
@@ -173,7 +173,7 @@ private class AppleSignInDelegate: NSObject, ASAuthorizationControllerDelegate, 
     }
     
     func presentationAnchor(for controller: ASAuthorizationController) -> ASPresentationAnchor {
-        return await UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }.first?.windows.first { $0.isKeyWindow } ?? ASPresentationAnchor()
+        return UIApplication.shared.windows.first { $0.isKeyWindow } ?? ASPresentationAnchor()
     }
 }
 
