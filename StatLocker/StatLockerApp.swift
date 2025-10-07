@@ -7,6 +7,7 @@
 
 import SwiftUI
 import FirebaseCore
+import GoogleSignIn  // ADD THIS
 
 @main
 struct StatLockerApp: App {
@@ -23,6 +24,11 @@ struct StatLockerApp: App {
                 .onAppear {
                     print("[StatLocker][Boot] App launched — iOS 17+ SwiftUI")
                 }
+                .onOpenURL { url in
+                    // Handle Google Sign-In redirect
+                    GIDSignIn.sharedInstance.handle(url)
+                    print("[StatLocker][Auth] Handled URL redirect: \(url)")
+                }  // ADD THIS
         }
     }
 }

@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import UIKit
 
 struct WelcomeScreen: View {
     @State private var isAuthPresented = false

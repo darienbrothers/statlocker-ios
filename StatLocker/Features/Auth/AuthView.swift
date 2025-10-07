@@ -63,7 +63,7 @@ struct AuthView: View {
                         }
                         .frame(maxWidth: .infinity)
                         .frame(height: 50)
-                        .background(Color(.systemGray6))
+                        .background(Color(uiColor: .systemGray6))
                         .cornerRadius(12)
                     }
                     .disabled(isLoading)
