@@ -8,6 +8,7 @@
 
 import Foundation
 import FirebaseAuth
+import FirebaseCore
 import AuthenticationServices
 import GoogleSignIn
 import SwiftUI
