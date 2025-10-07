@@ -1,0 +1,224 @@
+## 🔒 Important rules you HAVE TO FOLLOW
+- **Always add debug logs & comments** in the code for easier debug & readability. Prefix logs with `[StatLocker]` and the feature (e.g., `[StatLocker][Logging] Saved game`).
+- **Every time you choose to apply a rule(s), explicitly state the rule{s} in the output.** You can abbreviate the rule description to a single word or phrase.
+- **Do not make any changes until you have 95% confidence** that you know what to build. Ask follow-up questions until you reach that confidence.
+- **Never implement practice logging.** Only **Games** are logged.
+- **Respect context & meta:** HS ↔ Club toggle; HS-only **Conference / Non-Conference** tag.
+- **Protect data integrity:** validation at save (`saves ≤ shots`, `goalsAllowed = shots − saves`). Allow override with a warning banner and debug log.
+- **Default scopes:** Recruiting & GoalPace use **official (Game)** stats only; **Scrimmages excluded** unless user enables the setting.
+- **Accessibility:** large hit targets (≥44pt), Dynamic Type, haptics for primary actions, high-contrast colors.
+- **Privacy & safety:** no sensitive data in logs; expose export/delete for AthleteDNA; avoid shaming language in AI copy.
+
+---
+
+## 📂 Project structure
+> Keep a **single app target**. Organize by folders (no extra modules/packages unless explicitly requested).
+
+```
+/StatLocker
+  /App                  # App entry & DI bootstrap
+  /CoreKit              # Models, validators, formatters, feature flags
+  /CoreUI               # Theme (colors/typography/spacing/shadows), components
+  /Services             # Protocols + stubs: Auth, Store, AI, OCR, Analytics
+  /Features
+    /Welcome
+    /Auth
+    /Onboarding
+    /Dashboard
+    /Logging            # FAB → Bottom Sheet (Live / After / OCR)
+    /Stats
+    /Goals
+    /Recruiting
+    /Paywall
+    /Parent
+  /Resources            # Assets.xcassets (colors, icons), Localizable.strings
+  /Tests                # Unit & UI tests
+```
+
+- The main Swift file is **`StatLockerApp.swift`**.
+- Use **FeatureFlags.plist** to toggle: `AI_ENABLED`, `OCR_ENABLED`, `PAYWALL_ENABLED`.
+
+---
+
+## 🧰 Tech Stack
+- **SwiftUI** for UI (fallback to UIKit only if absolutely necessary).
+- **Swift** for logic (Swift 5.10+), **Observation** framework for state.
+- **iOS only** (iOS 17+ target).
+- **Auth:** Apple / Google / Email (protocol-based, stubbed if not configured).
+- **Persistence:** protocol-based (in-memory for dev; swap later).
+- **Monetization:** RevenueCat (stub if not configured).
+- **Analytics:** TelemetryDeck or protocol-based analytics.
+- **AI & OCR:** protocol interfaces (`AIService`, `OCRService`) with dev stubs.
+
+> If a service key is missing, **fail gracefully**, log a warning, and continue with stub data.
+
+---
+
+## 🧭 Product constraints (must implement)
+- **Bottom tabs (left→right):** Home (Locker), Stats, *(center FAB overlay — Log Game)*, Skills, Recruiting.
+- **Right-side drawer** (from avatar): Profile, Parent Mode, Subscriptions, Settings, Help, Feedback.
+- **FAB → Bottom Sheet** with three actions: **Live Game**, **After Game**, **Scan (OCR)**.
+- **Meta chips on logging flows:**
+  - Context: **HS | Club**
+  - **HS-only:** **Conference | Non-Conference**
+  - Opponent (optional text)
+- **Never** add practice logging anywhere.
+
+---
+
+## 🧱 Swift-specific rules
+
+### 0) General Coding
+- Prefer **simple solutions** and small, composable views.
+- Avoid duplicate code; extract shared components in **CoreUI**.
+- Support environments: **Debug**, **Staging**, **Release** (feature flags).
+- Only make changes that are **explicitly requested** or clearly related.
+- When fixing a bug, try to **preserve patterns**; if replacing, remove the old code path.
+- Keep files **≤ 200–300 lines**; refactor otherwise.
+- Mock/stub data **only in tests or dev stubs**, never in prod code paths.
+- **Never overwrite `.env` or secrets** without explicit instruction.
+
+### 1) State Management
+- Use **Observation**: `@Observable` for view models, `let model: XModel` in views (no `@StateObject` unless necessary).
+- Use `@Environment` for app-wide dependencies.
+- `@State` for local, view-owned flags only.
+- For value-type state shared with children, use `@Binding` if child needs write; pass value if read-only.
+
+### 2) Performance
+- Use `LazyVStack/HStack/Grid` for large lists.
+- Use stable identifiers in `ForEach`.
+- Avoid unnecessary recomputation; move logic to models.
+
+### 3) SwiftUI Lifecycle
+- Use `@main` + `App` protocol for entry.
+- Organize flows into Scenes and feature coordinators.
+- Use `onAppear/onDisappear` sparingly; prefer model-driven updates.
+
+### 4) Data Flow & Errors
+- Strong typing for models (`Codable`).
+- Validate inputs before save; surface non-blocking warnings for mismatches.
+- Bubble errors up with user-friendly messages and **debug logs**.
+
+### 5) Testing
+- Unit tests for view models & validators (e.g., Save% calc, aggregates).
+- UI tests for critical flows: Onboarding, Log After Game, Save, Filters.
+- Use Previews with mock models for rapid iteration.
+
+### 6) SwiftUI Patterns
+- `@Binding` for two-way data where needed.
+- Custom `PreferenceKey` for child→parent communication when appropriate.
+- Use `@Environment` for dependency injection (Theme, Services).
+
+### 7) Security
+- No secrets in source control; no PII in logs.
+- Respect iOS privacy prompts for camera (OCR).
+
+### 8) Declarations
+- Before creating new types, check for an existing one. Keep **CoreKit** tidy.
+
+### 9) No Extra Modules
+- Do **not** add additional targets/SPMs without approval. Keep a single app target; use folders to organize.
+
+### 10) Avoid Deprecations
+- **Never use deprecated Xcode/Swift APIs** without explicit approval.
+- Check for deprecation warnings and update to modern alternatives.
+- Use `@available` checks when targeting multiple iOS versions.
+
+---
+
+## 🧪 Validation & Domain Rules (critical)
+- **Games only** (no practices or scrimmages). Enforce in UI & models.
+- **Context required** on every log: `hs` or `club`.
+- **HS-only meta:** `isConference` bool; hidden for `club`.
+- **Validation** on save:
+  - `saves ≤ shots`
+  - `goalsAllowed = shots − saves`
+- **Filters:**
+  - Dashboard/Stats: `All | HS | Club` (persist per user).
+  - Stats scope chips: `HS | Club | Compare` (Compare shows split graph).
+- **Recruiting/GoalPace defaults:** Use all game stats.
+- **AI Coach copy:** Always context-aware for HS vs Club games.
+
+---
+
+## 🧩 Required Screens & Elements (Phase 0 focus)
+- **Welcome** (tagline, Get Started / Log In)
+- **Auth** (Apple/Google/Email; graceful fallbacks)
+- **Onboarding** (Team/Gender, Grad Year, Level, Club toggle, Position, Goals, Tone mini-quiz, Review)
+- **Home (Locker)** header HS↔Club toggle; stat tiles; goals bars; AI summary placeholder; **FAB**
+- **LogGame Bottom Sheet** (Live / After / OCR + meta chips)
+- **After Game** (+/− counters; auto Save%; validation; Undo x3)
+- **Live Game** (timer, quarter selector, big + buttons; undo pill; auto-draft)
+- **OCR** (photo → editable fields; confidence chips; manual override)
+- **Paywall v1** (7-day trial)
+- **Weekly Summary Card** (rule-based text)
+
+---
+
+## 🧾 Models (minimum)
+```swift
+struct GameStats: Codable, Equatable {
+  var shotsFaced: Int
+  var saves: Int
+  var goalsAllowed: Int
+  var clears: Int
+}
+
+enum GameContext: String, Codable { case hs, club }
+enum GameType: String, Codable { case game }
+
+struct GameLog: Codable, Identifiable, Equatable {
+  var id: String
+  var date: Date
+  var context: GameContext
+  var isConference: Bool?   // HS only; nil for Club
+  var opponent: String?
+  var stats: GameStats
+  var source: String        // live | after | ocr
+  var ocrConfidence: Double?
+}
+
+struct AthleteDNA: Codable {
+  // performance, context, behavior, mindset, ambition (outline only)
+}
+```
+
+---
+
+## 🧨 Analytics (events to log with parameters)
+- `context_switched` { from, to }
+- `game_logged` { context, isConference, source }
+- `log_validation_warning` { reason }
+- `filter_changed` { scope, value }
+- `ai_summary_viewed` { context, officialOnly }
+- `paywall_viewed` { tier }
+- `badge_earned` { type }
+
+---
+
+## ✅ Acceptance criteria (Phase 0)
+- From FAB tap to **saved After Game** in ≤ **90s** (median).
+- From FAB tap to **Live Game running** in ≤ **3 taps**.
+- All game logging works consistently across features.
+- HS-only **Conference** chip never appears in Club context.
+- Validation warnings never block save (unless impossible values); all saves logged with context and meta.
+- Crash-safe drafts for Live Game; recover after interruption.
+- All screens accessible (Dynamic Type, ≥44pt targets, haptics on primary actions).
+
+---
+
+## 🧠 How to talk back (Cursor etiquette)
+- At the start of an action, **echo which rules** you are applying (short names ok, e.g., “General Coding, Validation, No Practice, State Mgmt”).
+- If you’re not **95% confident**, ask 2–3 pointed questions before changing code.
+- Suggest the **smallest step** that moves us forward; avoid mega-PRs.
+- Keep commit messages structured: `feat(logging): add After Game validation`, `fix(stats): correct Save% calc`, `chore(ui): theme tokens`.
+
+---
+
+## 🆘 Do not do this
+- Don't add practice logging or references to it in UI or copy.
+- Don't add scrimmage logging or references to it anywhere.
+- Don't add new targets/SPMs without approval.
+- Don't ship hard-coded secrets or PII in logs.
+- Don't bypass validation or silently mutate user-entered stats.
+- Don't use deprecated Xcode/Swift APIs.
