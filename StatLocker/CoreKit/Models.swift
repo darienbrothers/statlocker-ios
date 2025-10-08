@@ -18,10 +18,11 @@ struct AthleteProfile: Codable, Identifiable, Equatable {
     var firstName: String
     var lastName: String
     var email: String
+    var sport: String // "lacrosse" | "basketball" | "field_hockey" | "football" | "baseball" (only lacrosse unlocked at launch)
     var teamGender: String // "boys" | "girls"
     var gradYear: Int // 2025-2028
     var level: String // "Freshman" | "JV" | "Varsity"
-    var position: String // Boys: Goalie, Attack, Midfield, Defense, FOGO, LSM | Girls: Goalie, Attack, Midfield, Defense
+    var position: String // Sport-specific positions (Lacrosse: Goalie, Attack, Midfield, Defense, FOGO, LSM)
     var aiTone: String // "Hype" | "Mentor" | "Analyst" | "Captain"
     var seasonGoals: [SeasonGoal] // Array of 3 goals
     var onboardingCompleted: Bool
@@ -131,6 +132,7 @@ struct TeamInfo: Codable, Equatable {
 /// Cleared after successful onboarding completion
 struct OnboardingProgress: Codable {
     var currentStep: Int
+    var sport: String
     var teamGender: String
     var gradYear: Int
     var level: String
@@ -148,6 +150,7 @@ struct OnboardingProgress: Codable {
     
     init() {
         self.currentStep = 1
+        self.sport = ""
         self.teamGender = ""
         self.gradYear = 2025
         self.level = ""

@@ -22,20 +22,24 @@ class OnboardingViewModel {
     var lastName: String
     var email: String
     
-    // MARK: - Step 1: Team Identity
+    // MARK: - Step 1: Sport Selection
+    
+    var sport: String = "" // "lacrosse" | "basketball" | "field_hockey" | "football" | "baseball"
+    
+    // MARK: - Step 2: Team Gender
     
     var teamGender: String = "" // "boys" | "girls"
     
-    // MARK: - Step 2: Profile Details
+    // MARK: - Step 3: Profile Details
     
     var gradYear: Int = 2025
     var level: String = "" // "Freshman" | "JV" | "Varsity"
     
-    // MARK: - Step 3: Position
+    // MARK: - Step 4: Position
     
     var position: String = ""
     
-    // MARK: - Step 4: Team Info
+    // MARK: - Step 5: Team Info
     
     var hsTeamName: String = ""
     var hsCity: String = ""
@@ -45,11 +49,11 @@ class OnboardingViewModel {
     var clubCity: String = ""
     var clubState: String = ""
     
-    // MARK: - Step 5: Season Goals
+    // MARK: - Step 6: Season Goals
     
     var selectedGoals: [SeasonGoal] = []
     
-    // MARK: - Step 6: Tone Quiz
+    // MARK: - Step 7: Tone Quiz
     
     var aiTone: String = "" // "Hype" | "Mentor" | "Analyst" | "Captain"
     
@@ -79,31 +83,39 @@ class OnboardingViewModel {
         
         switch currentStep {
         case 1:
-            // Step 1: Team Gender
+            // Step 1: Sport Selection
+            if sport.isEmpty {
+                errorMessage = "Please select a sport"
+                print("[StatLocker][Onboarding] Validation failed: No sport selected")
+                return false
+            }
+            
+        case 2:
+            // Step 2: Team Gender
             if teamGender.isEmpty {
                 errorMessage = "Please select Boys or Girls"
                 print("[StatLocker][Onboarding] Validation failed: No gender selected")
                 return false
             }
             
-        case 2:
-            // Step 2: Grad Year & Level
+        case 3:
+            // Step 3: Grad Year & Level
             if level.isEmpty {
                 errorMessage = "Please select your level"
                 print("[StatLocker][Onboarding] Validation failed: No level selected")
                 return false
             }
             
-        case 3:
-            // Step 3: Position
+        case 4:
+            // Step 4: Position
             if position.isEmpty {
                 errorMessage = "Please select your position"
                 print("[StatLocker][Onboarding] Validation failed: No position selected")
                 return false
             }
             
-        case 4:
-            // Step 4: Team Info
+        case 5:
+            // Step 5: Team Info
             if hsTeamName.isEmpty {
                 errorMessage = "Please enter your high school team name"
                 print("[StatLocker][Onboarding] Validation failed: No HS team name")
@@ -139,24 +151,24 @@ class OnboardingViewModel {
                 }
             }
             
-        case 5:
-            // Step 5: Season Goals
+        case 6:
+            // Step 6: Season Goals
             if selectedGoals.count != 3 {
                 errorMessage = "Please select exactly 3 season goals"
                 print("[StatLocker][Onboarding] Validation failed: \(selectedGoals.count) goals selected, need 3")
                 return false
             }
             
-        case 6:
-            // Step 6: AI Tone
+        case 7:
+            // Step 7: AI Tone
             if aiTone.isEmpty {
                 errorMessage = "Please select your AI Coach tone"
                 print("[StatLocker][Onboarding] Validation failed: No tone selected")
                 return false
             }
             
-        case 7:
-            // Step 7: Review - no validation needed
+        case 8:
+            // Step 8: Review - no validation needed
             break
             
         default:
@@ -173,6 +185,7 @@ class OnboardingViewModel {
     func saveProgress() {
         let progress = OnboardingProgress(
             currentStep: currentStep,
+            sport: sport,
             teamGender: teamGender,
             gradYear: gradYear,
             level: level,
@@ -210,6 +223,7 @@ class OnboardingViewModel {
             
             // Restore state
             self.currentStep = progress.currentStep
+            self.sport = progress.sport
             self.teamGender = progress.teamGender
             self.gradYear = progress.gradYear
             self.level = progress.level
@@ -314,6 +328,7 @@ class OnboardingViewModel {
                 firstName: firstName,
                 lastName: lastName,
                 email: email,
+                sport: sport,
                 teamGender: teamGender,
                 gradYear: gradYear,
                 level: level,
@@ -369,21 +384,23 @@ class OnboardingViewModel {
     func logStepCompletion() {
         switch currentStep {
         case 1:
-            print("[StatLocker][Onboarding] Step 1 completed: gender=\(teamGender)")
+            print("[StatLocker][Onboarding] Step 1 completed: sport=\(sport)")
         case 2:
-            print("[StatLocker][Onboarding] Step 2 completed: gradYear=\(gradYear), level=\(level)")
+            print("[StatLocker][Onboarding] Step 2 completed: gender=\(teamGender)")
         case 3:
-            print("[StatLocker][Onboarding] Step 3 completed: position=\(position)")
+            print("[StatLocker][Onboarding] Step 3 completed: gradYear=\(gradYear), level=\(level)")
         case 4:
-            print("[StatLocker][Onboarding] Step 4 completed: hs=\(hsTeamName), hasClub=\(hasClubTeam)")
+            print("[StatLocker][Onboarding] Step 4 completed: position=\(position)")
         case 5:
+            print("[StatLocker][Onboarding] Step 5 completed: hs=\(hsTeamName), hasClub=\(hasClubTeam)")
+        case 6:
             let customCount = selectedGoals.filter { $0.isCustom }.count
             let goalTitles = selectedGoals.map { $0.title }.joined(separator: ", ")
-            print("[StatLocker][Onboarding] Step 5 completed: goals=[\(goalTitles)], customCount=\(customCount)")
-        case 6:
-            print("[StatLocker][Onboarding] Step 6 completed: tone=\(aiTone)")
+            print("[StatLocker][Onboarding] Step 6 completed: goals=[\(goalTitles)], customCount=\(customCount)")
         case 7:
-            print("[StatLocker][Onboarding] Step 7: Review complete, ready to save")
+            print("[StatLocker][Onboarding] Step 7 completed: tone=\(aiTone)")
+        case 8:
+            print("[StatLocker][Onboarding] Step 8: Review complete, ready to save")
         default:
             break
         }
@@ -394,6 +411,7 @@ class OnboardingViewModel {
 
 extension OnboardingProgress {
     init(currentStep: Int,
+         sport: String,
          teamGender: String,
          gradYear: Int,
          level: String,
@@ -410,6 +428,7 @@ extension OnboardingProgress {
          lastUpdated: Date) {
         
         self.currentStep = currentStep
+        self.sport = sport
         self.teamGender = teamGender
         self.gradYear = gradYear
         self.level = level

@@ -1,7 +1,7 @@
 # B-003: Onboarding Flow Implementation (UPDATED)
 
 ## Overview
-Create a 6-step onboarding experience that collects athlete profile and team data, with auto-save progress, tone quiz for AI personalization, and position-specific goal selection from a curated goals library.
+Create an 8-step onboarding experience that collects athlete sport, profile, and team data, with auto-save progress, tone quiz for AI personalization, and position-specific goal selection from a curated goals library. Designed for multi-sport expansion with Lacrosse as the launch sport.
 
 ## Data Models (CoreKit/Models.swift)
 
@@ -13,10 +13,11 @@ struct AthleteProfile: Codable, Identifiable {
     var firstName: String
     var lastName: String
     var email: String
+    var sport: String // "lacrosse" | "basketball" | "field_hockey" | "football" | "baseball" (only lacrosse unlocked at launch)
     var teamGender: String // "boys" | "girls"
     var gradYear: Int // 2025-2028
     var level: String // "Freshman" | "JV" | "Varsity"
-    var position: String // Boys: Goalie, Attack, Midfield, Defense, FOGO, LSM | Girls: Goalie, Attack, Midfield, Defense
+    var position: String // Sport-specific positions
     var aiTone: String // "Hype" | "Mentor" | "Analyst" | "Captain"
     var seasonGoals: [SeasonGoal] // Array of 3 goals
     var onboardingCompleted: Bool
@@ -73,7 +74,51 @@ class GoalsLibrary {
 
 ## Onboarding Steps & Updated Copy
 
-### Step 1: Team Identity
+### Step 1: Sport Selection (NEW)
+**Screen Title:** "Let's build your Locker"  
+**Subtitle:** "Choose your sport to get started."
+
+**Sports Display:**
+
+**Available (Unlocked):**
+1. **Lacrosse** 
+   - Large card with lacrosse icon
+   - "Track games, stats, and recruiting"
+   - Fully accessible
+
+**Coming Soon (Locked):**
+2. **Basketball** 🔒
+   - Grayed out with lock icon
+   - "Coming soon" badge
+   
+3. **Field Hockey** 🔒
+   - Grayed out with lock icon
+   - "Coming soon" badge
+
+4. **Football** 🔒
+   - Grayed out with lock icon
+   - "Coming soon" badge
+
+5. **Baseball** 🔒
+   - Grayed out with lock icon
+   - "Coming soon" badge
+
+**UI Details:**
+- Display as 2-column grid of sport cards
+- Only Lacrosse is tappable
+- Locked sports show overlay with lock icon
+- Selected sport shows emerald accent border
+
+**Helper Copy:** "We're launching with lacrosse — more sports coming soon!"
+
+**Validation:**
+- Sport required (only "lacrosse" selectable for now)
+
+**Debug Log:** `[StatLocker][Onboarding] Step 1 completed: sport={sport}`
+
+---
+
+### Step 2: Team Gender (Previously Step 1)
 **Screen Title:** "Let's build your Locker"  
 **Subtitle:** "Every stat tells your story — start with the basics."
 
@@ -84,11 +129,11 @@ class GoalsLibrary {
 **Validation:**
 - Gender required before continuing
 
-**Debug Log:** `[StatLocker][Onboarding] Step 1 completed: gender={gender}`
+**Debug Log:** `[StatLocker][Onboarding] Step 2 completed: gender={gender}`
 
 ---
 
-### Step 2: Profile Details
+### Step 3: Profile Details (Previously Step 2)
 **Title:** "Tell us about yourself"  
 **Subtitle:** "We use this to build your recruiting timeline."
 
@@ -101,11 +146,11 @@ class GoalsLibrary {
 **Validation:**
 - Both fields required
 
-**Debug Log:** `[StatLocker][Onboarding] Step 2 completed: gradYear={year}, level={level}`
+**Debug Log:** `[StatLocker][Onboarding] Step 3 completed: gradYear={year}, level={level}`
 
 ---
 
-### Step 3: Position (UPDATED)
+### Step 4: Position (Previously Step 3)
 **Title:** "What's your primary position?"  
 **Subtitle:** "Your position shapes the stats we track."
 
@@ -144,11 +189,11 @@ class GoalsLibrary {
 **Validation:**
 - Position required
 
-**Debug Log:** `[StatLocker][Onboarding] Step 3 completed: position={position}`
+**Debug Log:** `[StatLocker][Onboarding] Step 4 completed: position={position}`
 
 ---
 
-### Step 4: Team Info
+### Step 5: Team Info (Previously Step 4)
 **Title:** "Where do you play?"  
 **Subtitle:** "We'll use this for your recruiting profile."
 
@@ -169,11 +214,11 @@ class GoalsLibrary {
 - HS name, city, state required
 - If club toggle ON: club fields also required
 
-**Debug Log:** `[StatLocker][Onboarding] Step 4 completed: hs={name}, hasClub={bool}`
+**Debug Log:** `[StatLocker][Onboarding] Step 5 completed: hs={name}, hasClub={bool}`
 
 ---
 
-### Step 5: Season Goals (UPDATED WITH GOALS LIBRARY)
+### Step 6: Season Goals (Previously Step 5)
 **Title:** "Pick your top 3 season goals"  
 **Subtitle:** "These keep you locked in all season."
 
@@ -218,11 +263,11 @@ When "Custom Goal" is tapped:
 **Validation:**
 - Exactly 3 goals required
 
-**Debug Log:** `[StatLocker][Onboarding] Step 5 completed: goals=[{goal1}, {goal2}, {goal3}], customCount={n}`
+**Debug Log:** `[StatLocker][Onboarding] Step 6 completed: goals=[{goal1}, {goal2}, {goal3}], customCount={n}`
 
 ---
 
-### Step 6: Tone Quiz
+### Step 7: Tone Quiz (Previously Step 6)
 **Title:** "How should your AI Coach sound?"  
 **Subtitle:** "This shapes how we give you feedback."
 
@@ -250,11 +295,11 @@ When "Custom Goal" is tapped:
 **Validation:**
 - Tone required
 
-**Debug Log:** `[StatLocker][Onboarding] Step 6 completed: tone={tone}`
+**Debug Log:** `[StatLocker][Onboarding] Step 7 completed: tone={tone}`
 
 ---
 
-### Step 7: Review
+### Step 8: Review (Previously Step 7)
 **Title:** "You're all set!"  
 **Subtitle:** "Review your info before entering your Locker."
 
@@ -290,7 +335,7 @@ AI Coach Tone: {tone}
 5. Navigate to Dashboard
 6. Show welcome toast: "Welcome to StatLocker, {firstName}!"
 
-**Debug Log:** `[StatLocker][Onboarding] Completed and saved to Firebase for user={uid}`
+**Debug Log:** `[StatLocker][Onboarding] Step 8: Review complete, saved to Firebase for user={uid}`
 
 ---
 
@@ -306,13 +351,14 @@ StatLocker/
       OnboardingCoordinator.swift   // Navigation + state management
       OnboardingViewModel.swift     // Business logic + Firebase save
       Views/
-        Step1TeamIdentityView.swift
-        Step2ProfileDetailsView.swift
-        Step3PositionView.swift     // Includes position tooltips
-        Step4TeamInfoView.swift
-        Step5SeasonGoalsView.swift  // Goals library + custom input
-        Step6ToneQuizView.swift
-        Step7ReviewView.swift
+        Step1SportSelectionView.swift    // NEW: Sport selection (Lacrosse unlocked)
+        Step2TeamGenderView.swift        // Boys/Girls selector
+        Step3ProfileDetailsView.swift    // Grad year + level
+        Step4PositionView.swift          // Includes position tooltips
+        Step5TeamInfoView.swift          // HS + optional club
+        Step6SeasonGoalsView.swift       // Goals library + custom input
+        Step7ToneQuizView.swift          // AI Coach tone
+        Step8ReviewView.swift            // Final review
       Components/
         PositionCard.swift           // Reusable position card with tooltip
         GoalCard.swift               // Reusable goal selection card
@@ -332,7 +378,7 @@ StatLocker/
     func nextStep() {
         guard viewModel.validateCurrentStep() else { return }
         viewModel.saveProgress()
-        if currentStep < 7 {
+        if currentStep < 8 {
             currentStep += 1
         } else {
             Task {
@@ -362,16 +408,19 @@ StatLocker/
 ```swift
 @Observable class OnboardingViewModel {
     // Step 1
-    var teamGender: String = ""
+    var sport: String = ""
     
     // Step 2
+    var teamGender: String = ""
+    
+    // Step 3
     var gradYear: Int = 2025
     var level: String = ""
     
-    // Step 3
+    // Step 4
     var position: String = ""
     
-    // Step 4
+    // Step 5
     var hsTeamName: String = ""
     var hsCity: String = ""
     var hsState: String = ""
@@ -380,10 +429,10 @@ StatLocker/
     var clubCity: String = ""
     var clubState: String = ""
     
-    // Step 5
+    // Step 6
     var selectedGoals: [SeasonGoal] = []
     
-    // Step 6
+    // Step 7
     var aiTone: String = ""
     
     // User info
@@ -412,6 +461,7 @@ StatLocker/
             firstName: firstName,
             lastName: lastName,
             email: email,
+            sport: sport,
             teamGender: teamGender,
             gradYear: gradYear,
             level: level,
@@ -541,6 +591,7 @@ struct StatLockerApp: App {
 ```swift
 struct OnboardingProgress: Codable {
     var currentStep: Int
+    var sport: String
     var teamGender: String
     var gradYear: Int
     var level: String
@@ -567,7 +618,7 @@ struct OnboardingProgress: Codable {
 ## UI/UX Details
 
 **Global:**
-- Progress indicator: "Step 1 of 7", "Step 2 of 7"... at top (12pt SF Regular, muted gray)
+- Progress indicator: "Step 1 of 8", "Step 2 of 8"... at top (12pt SF Regular, muted gray)
 - Back button: "<" icon (44pt tap target)
 - Continue button: "Continue" (primary indigo, 50pt height, full width)
 - Smooth slide transitions between steps
@@ -594,13 +645,14 @@ struct OnboardingProgress: Codable {
 
 | Step | Required Fields | Validation |
 |------|----------------|------------|
-| 1 | teamGender | Must select Boys or Girls |
-| 2 | gradYear, level | Both required |
-| 3 | position | Must select one position |
-| 4 | hsTeamName, hsCity, hsState | All HS fields required; club fields required only if toggle ON |
-| 5 | selectedGoals | Exactly 3 goals required |
-| 6 | aiTone | Must select one tone |
-| 7 | N/A | Review only, no validation |
+| 1 | sport | Must select Lacrosse (only unlocked sport) |
+| 2 | teamGender | Must select Boys or Girls |
+| 3 | gradYear, level | Both required |
+| 4 | position | Must select one position |
+| 5 | hsTeamName, hsCity, hsState | All HS fields required; club fields required only if toggle ON |
+| 6 | selectedGoals | Exactly 3 goals required |
+| 7 | aiTone | Must select one tone |
+| 8 | N/A | Review only, no validation |
 
 ---
 
@@ -639,41 +691,47 @@ struct OnboardingProgress: Codable {
 - [x] Task 6: Implement Firebase save logic for profile and teamInfo
 
 **Phase 3: Step Views**
-- [ ] Task 7: Create Step1TeamIdentityView with gender selector (Boys/Girls segmented control)
-- [ ] Task 8: Create Step2ProfileDetailsView with grad year picker and level chips
-- [ ] Task 9: Create Step3PositionView with gender-aware position list and tooltips
-- [ ] Task 10: Create Step4TeamInfoView with HS fields and conditional club toggle
-- [ ] Task 11: Create Step5SeasonGoalsView with goals library filtering and custom goal modal
-- [ ] Task 12: Create Step6ToneQuizView with 4 tone options and example copy
-- [ ] Task 13: Create Step7ReviewView with read-only summary and edit capability
+- [x] Task 7: Create Step1SportSelectionView with sport grid (Lacrosse unlocked, others locked)
+- [x] Task 8: Create Step2TeamGenderView with gender selector (Boys/Girls segmented control)
+- [x] Task 9: Create Step3ProfileDetailsView with grad year picker and level chips
+- [x] Task 10: Create Step4PositionView with gender-aware position list and tooltips
+- [x] Task 11: Create Step5TeamInfoView with HS fields and conditional club toggle
+- [x] Task 12: Create Step6SeasonGoalsView with goals library filtering and custom goal modal
+- [x] Task 13: Create Step7ToneQuizView with 4 tone options and example copy
+- [x] Task 14: Create Step8ReviewView with read-only summary and edit capability
 
 **Phase 4: Reusable Components**
-- [ ] Task 14: Create PositionCard component with tooltip overlay
-- [ ] Task 15: Create GoalCard component for goal selection
-- [ ] Task 16: Create CustomGoalSheet modal component
+- [x] Task 15: Create SportCard component for sport selection grid
+- [x] Task 16: Create PositionCard component with tooltip overlay
+- [x] Task 17: Create GoalCard component for goal selection
+- [x] Task 18: Create CustomGoalSheet modal component
 
 **Phase 5: Integration**
-- [ ] Task 17: Update StatLockerApp to check profile existence after auth
-- [ ] Task 18: Implement routing logic: auth → onboarding vs dashboard
-- [ ] Task 19: Add onboarding progress resume logic from UserDefaults
-- [ ] Task 20: Connect OnboardingCoordinator to main app navigation
+- [x] Task 19: Update StatLockerApp to check profile existence after auth
+- [x] Task 20: Implement routing logic: auth → onboarding vs dashboard
+- [x] Task 21: Add onboarding progress resume logic from UserDefaults
+- [x] Task 22: Connect OnboardingCoordinator to main app navigation
+- [x] Task 23: Update OnboardingCoordinator max steps from 7 to 8
 
 **Phase 6: Testing & Polish**
-- [ ] Task 21: Test all validation rules per step
-- [ ] Task 22: Test progress persistence and resume
-- [ ] Task 23: Test Firebase save/load functionality
-- [ ] Task 24: Add VoiceOver labels and accessibility
-- [ ] Task 25: Test Dynamic Type support
-- [ ] Task 26: Verify dark mode colors
-- [ ] Task 27: Test gender-specific position filtering
-- [ ] Task 28: Test goals library filtering by position + level
-- [ ] Task 29: Test custom goal creation and selection
-- [ ] Task 30: End-to-end onboarding flow test
+- [ ] Task 24: Test sport selection (only Lacrosse accessible)
+- [ ] Task 25: Test all validation rules per step
+- [ ] Task 26: Test progress persistence and resume
+- [ ] Task 27: Test Firebase save/load functionality
+- [ ] Task 28: Add VoiceOver labels and accessibility
+- [ ] Task 29: Test Dynamic Type support
+- [ ] Task 30: Verify dark mode colors
+- [ ] Task 31: Test gender-specific position filtering
+- [ ] Task 32: Test goals library filtering by position + level
+- [ ] Task 33: Test custom goal creation and selection
+- [ ] Task 34: End-to-end 8-step onboarding flow test
 
 ---
 
 ## Testing Checklist
 
+- [ ] Sport selection shows Lacrosse unlocked, others locked with coming soon badges
+- [ ] Only Lacrosse is tappable in sport selection
 - [ ] Gender selection affects position list (boys vs girls)
 - [ ] Position tooltips display correct stats for each position
 - [ ] Goals filter correctly by position + level
@@ -681,12 +739,12 @@ struct OnboardingProgress: Codable {
 - [ ] Exactly 3 goals enforced
 - [ ] Club toggle shows/hides conditional fields
 - [ ] Back button preserves data
-- [ ] Progress saves to UserDefaults after each step
+- [ ] Progress saves to UserDefaults after each step (8 steps total)
 - [ ] Progress resumes on app relaunch
 - [ ] Firebase save succeeds on completion
 - [ ] UserDefaults clears on completion
 - [ ] Navigation to Dashboard works
-- [ ] All validation rules enforced
+- [ ] All 8-step validation rules enforced
 - [ ] VoiceOver labels present
 - [ ] Dynamic Type supported
 - [ ] Dark mode colors correct
