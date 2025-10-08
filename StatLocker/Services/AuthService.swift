@@ -62,13 +62,15 @@ class AuthService: AuthServiceProtocol, ObservableObject {
         let authorizationController = ASAuthorizationController(authorizationRequests: [request])
         
         return try await withCheckedThrowingContinuation { continuation in
-            let delegate = AppleSignInDelegate { result in
-                continuation.resume(with: result)
+            Task { @MainActor in
+                let delegate = AppleSignInDelegate { result in
+                    continuation.resume(with: result)
+                }
+                
+                authorizationController.delegate = delegate
+                authorizationController.presentationContextProvider = delegate
+                authorizationController.performRequests()
             }
-            
-            authorizationController.delegate = delegate
-            authorizationController.presentationContextProvider = delegate
-            authorizationController.performRequests()
         }
     }
     
@@ -77,7 +79,7 @@ class AuthService: AuthServiceProtocol, ObservableObject {
     func signInWithGoogle() async throws -> User {
         print("[StatLocker][Auth] Starting Google Sign In")
         
-        guard let presentingViewController = await UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }.first?.windows.first?.rootViewController else {
+        guard let presentingViewController = await UIApplication.shared.connectedScenes.compactMap({ $0 as? UIWindowScene }).first?.windows.first?.rootViewController else {
             throw AuthError.noPresentingViewController
         }
         
@@ -137,10 +139,11 @@ class AuthService: AuthServiceProtocol, ObservableObject {
 
 // MARK: - Apple Sign In Delegate
 
+@MainActor
 private class AppleSignInDelegate: NSObject, ASAuthorizationControllerDelegate, ASAuthorizationControllerPresentationContextProviding {
     private let completion: (Result<User, Error>) -> Void
     
-    @MainActor init(completion: @escaping (Result<User, Error>) -> Void) {
+    init(completion: @escaping (Result<User, Error>) -> Void) {
         self.completion = completion
     }
     
@@ -152,7 +155,9 @@ private class AppleSignInDelegate: NSObject, ASAuthorizationControllerDelegate, 
             return
         }
         
-        let credential = OAuthProvider.credential(withProviderID: "apple.com", idToken: identityTokenString)
+        let credential = OAuthProvider.appleCredential(withIDToken: identityTokenString,
+                                                       rawNonce: nil,
+                                                       fullName: appleIDCredential.fullName)
         
         Task {
             do {
@@ -173,7 +178,11 @@ private class AppleSignInDelegate: NSObject, ASAuthorizationControllerDelegate, 
     }
     
     func presentationAnchor(for controller: ASAuthorizationController) -> ASPresentationAnchor {
-        return await UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }.first?.windows.first { $0.isKeyWindow } ?? ASPresentationAnchor()
+        guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+              let window = windowScene.windows.first(where: { $0.isKeyWindow }) else {
+            return ASPresentationAnchor()
+        }
+        return window
     }
 }
 
