@@ -142,7 +142,7 @@ struct LevelChip: View {
     let vm = OnboardingViewModel(user: MockUser())
     vm.gradYear = 2026
     vm.level = "Varsity"
-    return Step3ProfileDetailsView(viewModel: vm)
+    Step3ProfileDetailsView(viewModel: vm)
         .background(Theme.Colors.background)
 }
 

@@ -132,7 +132,7 @@ struct Step6SeasonGoalsView: View {
     let vm = OnboardingViewModel(user: MockUser())
     vm.position = "Goalie"
     vm.level = "Varsity"
-    return Step6SeasonGoalsView(viewModel: vm)
+    Step6SeasonGoalsView(viewModel: vm)
         .background(Theme.Colors.background)
 }
 
@@ -143,7 +143,7 @@ struct Step6SeasonGoalsView: View {
     let goal1 = SeasonGoal(title: "60%+ save percentage", targetValue: 0.6, unit: "%", metricType: "percent", trackingKey: "save_pct")
     let goal2 = SeasonGoal(title: "200+ saves (season)", targetValue: 200, unit: "saves", metricType: "count", trackingKey: "saves")
     vm.selectedGoals = [goal1, goal2]
-    return Step6SeasonGoalsView(viewModel: vm)
+    Step6SeasonGoalsView(viewModel: vm)
         .background(Theme.Colors.background)
 }
 

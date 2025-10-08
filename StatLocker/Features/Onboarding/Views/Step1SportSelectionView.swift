@@ -169,7 +169,7 @@ struct SportCard: View {
 #Preview("Step 1 - Lacrosse Selected") {
     let vm = OnboardingViewModel(user: MockUser())
     vm.sport = "lacrosse"
-    return Step1SportSelectionView(viewModel: vm)
+    Step1SportSelectionView(viewModel: vm)
         .background(Theme.Colors.background)
 }
 

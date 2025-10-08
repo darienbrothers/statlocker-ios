@@ -226,7 +226,7 @@ struct Step5TeamInfoView: View {
     vm.hsTeamName = "Duxbury High School"
     vm.hsCity = "Duxbury"
     vm.hsState = "MA"
-    return Step5TeamInfoView(viewModel: vm)
+    Step5TeamInfoView(viewModel: vm)
         .background(Theme.Colors.background)
 }
 

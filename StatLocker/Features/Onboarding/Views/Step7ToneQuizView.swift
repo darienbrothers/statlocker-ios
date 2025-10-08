@@ -166,7 +166,7 @@ struct ToneCard: View {
 #Preview("Step 7 - Hype Selected") {
     let vm = OnboardingViewModel(user: MockUser())
     vm.aiTone = "Hype"
-    return Step7ToneQuizView(viewModel: vm)
+    Step7ToneQuizView(viewModel: vm)
         .background(Theme.Colors.background)
 }
 

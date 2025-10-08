@@ -135,7 +135,7 @@ struct Step4PositionView: View {
 #Preview("Step 4 - Boys") {
     let vm = OnboardingViewModel(user: MockUser())
     vm.teamGender = "boys"
-    return Step4PositionView(viewModel: vm)
+    Step4PositionView(viewModel: vm)
         .background(Theme.Colors.background)
 }
 
@@ -143,7 +143,7 @@ struct Step4PositionView: View {
     let vm = OnboardingViewModel(user: MockUser())
     vm.teamGender = "girls"
     vm.position = "Goalie"
-    return Step4PositionView(viewModel: vm)
+    Step4PositionView(viewModel: vm)
         .background(Theme.Colors.background)
 }
 

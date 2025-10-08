@@ -117,7 +117,7 @@ struct GenderButton: View {
 #Preview("Step 2 - Boys Selected") {
     let vm = OnboardingViewModel(user: MockUser())
     vm.teamGender = "boys"
-    return Step2TeamGenderView(viewModel: vm)
+    Step2TeamGenderView(viewModel: vm)
         .background(Theme.Colors.background)
 }
 

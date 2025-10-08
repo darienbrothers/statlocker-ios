@@ -219,7 +219,7 @@ struct ReviewSection<Content: View>: View {
     ]
     vm.aiTone = "Hype"
     
-    return Step8ReviewView(viewModel: vm) { step in
+    Step8ReviewView(viewModel: vm) { step in
         print("Navigate to step \(step)")
     }
     .background(Theme.Colors.background)
