@@ -23,10 +23,15 @@ class OnboardingCoordinator {
     
     // MARK: - Initialization
     
-    init(user: User) {
-        self.viewModel = OnboardingViewModel(user: user)
+    init(userId: String, displayName: String?, email: String?) {
+        self.viewModel = OnboardingViewModel(userId: userId, displayName: displayName, email: email)
         self.currentStep = viewModel.currentStep
         print("[StatLocker][Onboarding] Coordinator initialized at step \(currentStep)")
+    }
+    
+    /// Convenience initializer for FirebaseAuth.User
+    convenience init(user: User) {
+        self.init(userId: user.uid, displayName: user.displayName, email: user.email)
     }
     
     // MARK: - Navigation
@@ -47,12 +52,12 @@ class OnboardingCoordinator {
         viewModel.saveProgress()
         
         // Move to next step or complete
-        if currentStep < 8 {
+        if currentStep < 11 {
             currentStep += 1
             viewModel.currentStep = currentStep
             print("[StatLocker][Onboarding] Advanced to step \(currentStep)")
         } else {
-            // Step 8 complete - finalize onboarding
+            // Step 11 complete - finalize onboarding
             Task {
                 await completeOnboarding()
             }
@@ -77,7 +82,7 @@ class OnboardingCoordinator {
     
     /// Jump to specific step (for Edit from Review)
     func goToStep(_ step: Int) {
-        guard step >= 1 && step <= 8 else {
+        guard step >= 1 && step <= 11 else {
             print("[StatLocker][Onboarding] Invalid step number: \(step)")
             return
         }
@@ -108,12 +113,12 @@ class OnboardingCoordinator {
     
     /// Progress as a fraction (for progress bar)
     var progressFraction: Double {
-        Double(currentStep) / 8.0
+        Double(currentStep) / 11.0
     }
     
     /// Progress label for display
     var progressLabel: String {
-        "Step \(currentStep) of 8"
+        "Step \(currentStep) of 11"
     }
     
     /// Check if on first step
@@ -123,12 +128,12 @@ class OnboardingCoordinator {
     
     /// Check if on last step
     var isLastStep: Bool {
-        currentStep == 8
+        currentStep == 11
     }
     
     /// Button text based on step
     var continueButtonText: String {
-        if currentStep == 8 {
+        if currentStep == 11 {
             return "Enter Your Locker"
         } else {
             return "Continue"

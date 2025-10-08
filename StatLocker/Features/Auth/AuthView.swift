@@ -9,7 +9,7 @@ import SwiftUI
 import AuthenticationServices
 
 struct AuthView: View {
-    @State private var authService = AuthService()
+    @Environment(AuthService.self) private var authService
     @Environment(\.dismiss) private var dismiss
     
     @State private var email = ""
@@ -273,6 +273,7 @@ struct AuthView: View {
 
 #Preview {
     AuthView()
+        .environment(AuthService())
 }
 
 

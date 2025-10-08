@@ -199,7 +199,7 @@ struct ReviewSection<Content: View>: View {
 // MARK: - Preview
 
 #Preview("Step 8 - Complete") {
-    let vm = OnboardingViewModel(user: MockUser())
+    let vm = OnboardingViewModel(userId: "preview", displayName: "John Doe", email: "john@example.com")
     vm.sport = "lacrosse"
     vm.teamGender = "boys"
     vm.gradYear = 2026
@@ -219,7 +219,7 @@ struct ReviewSection<Content: View>: View {
     ]
     vm.aiTone = "Hype"
     
-    Step8ReviewView(viewModel: vm) { step in
+    return Step8ReviewView(viewModel: vm) { step in
         print("Navigate to step \(step)")
     }
     .background(Theme.Colors.background)

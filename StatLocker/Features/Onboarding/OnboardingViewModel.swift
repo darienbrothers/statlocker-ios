@@ -63,16 +63,34 @@ class OnboardingViewModel {
     var isLoading: Bool = false
     var errorMessage: String?
     
+    // MARK: - Name Extraction
+    
+    /// Extracts display name for personalization
+    var displayName: String {
+        if !firstName.isEmpty {
+            return firstName
+        } else if let emailPrefix = email.split(separator: "@").first {
+            return String(emailPrefix)
+        } else {
+            return "Athlete"
+        }
+    }
+    
     // MARK: - Initialization
     
-    init(user: User) {
-        self.userId = user.uid
-        self.firstName = user.displayName?.components(separatedBy: " ").first ?? ""
-        self.lastName = user.displayName?.components(separatedBy: " ").last ?? ""
-        self.email = user.email ?? ""
+    init(userId: String, displayName: String?, email: String?) {
+        self.userId = userId
+        self.firstName = displayName?.components(separatedBy: " ").first ?? ""
+        self.lastName = displayName?.components(separatedBy: " ").last ?? ""
+        self.email = email ?? ""
         
         loadProgress()
         print("[StatLocker][Onboarding] Initialized for user: \(userId)")
+    }
+    
+    /// Convenience initializer for FirebaseAuth.User
+    convenience init(user: User) {
+        self.init(userId: user.uid, displayName: user.displayName, email: user.email)
     }
     
     // MARK: - Validation

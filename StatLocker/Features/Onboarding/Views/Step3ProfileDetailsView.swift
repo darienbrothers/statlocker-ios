@@ -7,6 +7,7 @@
 //
 
 import SwiftUI
+import FirebaseAuth
 
 struct Step3ProfileDetailsView: View {
     @Bindable var viewModel: OnboardingViewModel
@@ -134,15 +135,15 @@ struct LevelChip: View {
 // MARK: - Preview
 
 #Preview("Step 3 - Default") {
-    Step3ProfileDetailsView(viewModel: OnboardingViewModel(user: MockUser()))
+    Step3ProfileDetailsView(viewModel: OnboardingViewModel(userId: "preview", displayName: "John Doe", email: "john@example.com"))
         .background(Theme.Colors.background)
 }
 
 #Preview("Step 3 - Varsity Selected") {
-    let vm = OnboardingViewModel(user: MockUser())
+    let vm = OnboardingViewModel(userId: "preview", displayName: "John Doe", email: "john@example.com")
     vm.gradYear = 2026
     vm.level = "Varsity"
-    Step3ProfileDetailsView(viewModel: vm)
+    return Step3ProfileDetailsView(viewModel: vm)
         .background(Theme.Colors.background)
 }
 

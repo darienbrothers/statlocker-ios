@@ -11,7 +11,7 @@ import UIKit
 struct WelcomeScreen: View {
     @State private var isAuthPresented = false
     @State private var currentPage = 0
-    @State private var authService = AuthService()
+    @Environment(AuthService.self) private var authService
     
     private let totalPages = 4
     
@@ -260,10 +260,12 @@ struct WelcomeScreen: View {
         }
         .sheet(isPresented: $isAuthPresented) {
             AuthView()
+                .environment(authService)
         }
     }
 }
 
 #Preview {
     WelcomeScreen()
+        .environment(AuthService())
 }

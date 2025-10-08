@@ -216,17 +216,17 @@ struct Step5TeamInfoView: View {
 // MARK: - Preview
 
 #Preview("Step 5 - HS Only") {
-    Step5TeamInfoView(viewModel: OnboardingViewModel(user: MockUser()))
+    Step5TeamInfoView(viewModel: OnboardingViewModel(userId: "preview", displayName: "John Doe", email: "john@example.com"))
         .background(Theme.Colors.background)
 }
 
 #Preview("Step 5 - With Club") {
-    let vm = OnboardingViewModel(user: MockUser())
+    let vm = OnboardingViewModel(userId: "preview", displayName: "John Doe", email: "john@example.com")
     vm.hasClubTeam = true
     vm.hsTeamName = "Duxbury High School"
     vm.hsCity = "Duxbury"
     vm.hsState = "MA"
-    Step5TeamInfoView(viewModel: vm)
+    return Step5TeamInfoView(viewModel: vm)
         .background(Theme.Colors.background)
 }
 

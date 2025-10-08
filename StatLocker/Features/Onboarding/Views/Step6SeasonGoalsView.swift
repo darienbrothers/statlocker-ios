@@ -97,8 +97,7 @@ struct Step6SeasonGoalsView: View {
                         )
                         .overlay(
                             RoundedRectangle(cornerRadius: 12, style: .continuous)
-                                .stroke(Theme.Colors.primary.opacity(0.3), lineWidth: 1)
-                                .strokeStyle(StrokeStyle(lineWidth: 1, dash: [5, 3]))
+                                .stroke(Theme.Colors.primary.opacity(0.3), style: StrokeStyle(lineWidth: 1, dash: [5, 3]))
                         )
                     }
                     .buttonStyle(.plain)
@@ -129,21 +128,21 @@ struct Step6SeasonGoalsView: View {
 // MARK: - Preview
 
 #Preview("Step 6 - No Selection") {
-    let vm = OnboardingViewModel(user: MockUser())
+    let vm = OnboardingViewModel(userId: "preview", displayName: "John Doe", email: "john@example.com")
     vm.position = "Goalie"
     vm.level = "Varsity"
-    Step6SeasonGoalsView(viewModel: vm)
+    return Step6SeasonGoalsView(viewModel: vm)
         .background(Theme.Colors.background)
 }
 
 #Preview("Step 6 - 2 Selected") {
-    let vm = OnboardingViewModel(user: MockUser())
+    let vm = OnboardingViewModel(userId: "preview", displayName: "John Doe", email: "john@example.com")
     vm.position = "Goalie"
     vm.level = "Varsity"
     let goal1 = SeasonGoal(title: "60%+ save percentage", targetValue: 0.6, unit: "%", metricType: "percent", trackingKey: "save_pct")
     let goal2 = SeasonGoal(title: "200+ saves (season)", targetValue: 200, unit: "saves", metricType: "count", trackingKey: "saves")
     vm.selectedGoals = [goal1, goal2]
-    Step6SeasonGoalsView(viewModel: vm)
+    return Step6SeasonGoalsView(viewModel: vm)
         .background(Theme.Colors.background)
 }
 

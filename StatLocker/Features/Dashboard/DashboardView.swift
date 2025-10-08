@@ -2,43 +2,201 @@
 //  DashboardView.swift
 //  StatLocker
 //
-//  Placeholder dashboard view for B-003 onboarding completion.
-//  Full implementation in B-004.
+//  Main Dashboard (Home/Locker) view with hero card, stats, goals, and FAB.
+//  Used in B-004 Dashboard to display athlete overview and quick game logging.
 //
 
 import SwiftUI
+import Foundation
 
 struct DashboardView: View {
+    @State private var viewModel: DashboardViewModel
+    
+    init(profile: AthleteProfile, teamInfo: TeamInfo, gameService: GameService = GameService.shared) {
+        _viewModel = State(wrappedValue: DashboardViewModel(
+            profile: profile,
+            teamInfo: teamInfo,
+            gameService: gameService
+        ))
+    }
+    
     var body: some View {
-        VStack(spacing: Theme.Spacing.xl) {
-            
-            Spacer()
-            
-            // Success State
-            VStack(spacing: Theme.Spacing.md) {
-                Image(systemName: "checkmark.circle.fill")
-                    .font(.system(size: 64))
-                    .foregroundStyle(Theme.Colors.accentEmerald)
-                
-                Text("Welcome to StatLocker!")
-                    .font(Theme.Typography.headline(28))
-                    .foregroundStyle(Theme.Colors.textPrimary)
-                
-                Text("Your Locker is ready. Dashboard coming in B-004.")
-                    .font(Theme.Typography.body(16))
-                    .foregroundStyle(Theme.Colors.textSecondary)
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal, Theme.Spacing.xl)
+        ZStack(alignment: .bottom) {
+            ScrollView {
+                VStack(spacing: Theme.Spacing.md) {
+                    // Hero Card
+                    HeroCard(
+                        profile: viewModel.profile,
+                        teamInfo: viewModel.teamInfo,
+                        selectedContext: $viewModel.selectedContext
+                    )
+                    
+                    // Empty State OR Active Content
+                    if viewModel.totalGamesLogged == 0 {
+                        emptyStateView
+                    } else {
+                        activeStateView
+                    }
+                }
+                .padding(Theme.Spacing.md)
+                .padding(.bottom, 80) // Space for FAB
             }
             
-            Spacer()
+            // FAB
+            FABButton()
+                .padding(.bottom, Theme.Spacing.xl)
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Theme.Colors.background)
+        .navigationBarTitleDisplayMode(.inline)
+    }
+    
+    var emptyStateView: some View {
+        VStack(spacing: Theme.Spacing.md) {
+            // Empty Locker CTA
+            VStack(spacing: Theme.Spacing.md) {
+                Image(systemName: "lock.shield.fill")
+                    .font(.system(size: 48))
+                    .foregroundStyle(Theme.Colors.muted)
+                
+                Text("Your Locker is Empty")
+                    .font(Theme.Typography.headline(20))
+                    .foregroundStyle(Theme.Colors.textPrimary)
+                
+                Text("Every great season starts with one game. Let's build your story.")
+                    .font(Theme.Typography.body())
+                    .foregroundStyle(Theme.Colors.textSecondary)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, Theme.Spacing.lg)
+                
+                Button(action: {
+                    // Open FAB sheet
+                    print("[StatLocker][Dashboard] Log Your First Game button tapped")
+                }) {
+                    Text("Log Your First Game")
+                        .font(Theme.Typography.title(17))
+                        .foregroundStyle(.white)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 50)
+                        .background(Theme.Colors.primary)
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                }
+                .accessibilityLabel("Log your first game")
+            }
+            .padding(Theme.Spacing.xl)
+            .background(Theme.Colors.cardSurface)
+            .clipShape(RoundedRectangle(cornerRadius: 16))
+            .themedShadow(Theme.Shadows.card)
+            
+            // Goals at 0%
+            SeasonGoalsCard(goals: viewModel.profile.seasonGoals)
+            
+            // Empty Performance Stats
+            PerformanceStatsCard(
+                stats: [],
+                perGameStats: [:],
+                context: viewModel.selectedContext
+            )
+            
+            // Empty Recent Games
+            RecentGamesCard(games: []) {
+                // Navigate to Stats tab
+                print("[StatLocker][Dashboard] See All games tapped")
+            }
+        }
+    }
+    
+    var activeStateView: some View {
+        VStack(spacing: Theme.Spacing.md) {
+            // Season Goals
+            SeasonGoalsCard(goals: viewModel.profile.seasonGoals)
+            
+            // Performance Stats
+            PerformanceStatsCard(
+                stats: viewModel.calculatePerformanceStats(),
+                perGameStats: calculatePerGameStats(),
+                context: viewModel.selectedContext
+            )
+            
+            // AI Insights
+            AIInsightCard(
+                state: viewModel.aiInsightState,
+                insight: viewModel.generateAIInsight(),
+                nextAction: viewModel.generateNextAction()
+            ) {
+                // Navigate to Skills tab
+                print("[StatLocker][Dashboard] AI insight CTA tapped")
+            }
+            
+            // Recent Games
+            RecentGamesCard(games: viewModel.recentGames) {
+                // Navigate to Stats tab
+                print("[StatLocker][Dashboard] See All games tapped")
+            }
+        }
+    }
+    
+    // MARK: - Helper Functions
+    
+    func calculatePerGameStats() -> [String: Double] {
+        guard !viewModel.contextGames.isEmpty else { return [:] }
+        
+        let config = StatConfigForPosition(position: viewModel.profile.position)
+        var perGameStats: [String: Double] = [:]
+        
+        for statKey in config.perGameStats {
+            let total = viewModel.contextGames.reduce(0) { sum, game in
+                switch statKey {
+                case "saves": return sum + game.stats.saves
+                case "goalsAllowed": return sum + game.stats.goalsAllowed
+                case "clears": return sum + game.stats.clears
+                case "shotsFaced": return sum + game.stats.shotsFaced
+                case "goals": return sum + game.stats.goals
+                case "assists": return sum + game.stats.assists
+                case "shots": return sum + game.stats.shots
+                case "groundBalls": return sum + game.stats.groundBalls
+                case "causedTurnovers": return sum + game.stats.causedTurnovers
+                case "faceoffWins": return sum + game.stats.faceoffWins
+                default: return sum
+                }
+            }
+            let average = Double(total) / Double(viewModel.contextGames.count)
+            perGameStats[config.perGameDisplayName(for: statKey)] = average
+        }
+        
+        return perGameStats
     }
 }
 
 #Preview {
-    DashboardView()
+    let sampleProfile = AthleteProfile(
+        userId: "123",
+        firstName: "Jordan",
+        lastName: "Smith",
+        email: "jordan@example.com",
+        sport: "lacrosse",
+        teamGender: "boys",
+        gradYear: 2026,
+        level: "Varsity",
+        position: "Goalie",
+        aiTone: "Mentor",
+        seasonGoals: [
+            SeasonGoal(title: "60%+ save percentage", targetValue: 0.6, currentValue: 0.23, unit: "%", metricType: "percent", trackingKey: "save_pct"),
+            SeasonGoal(title: "200+ saves", targetValue: 200, currentValue: 45, unit: "saves", metricType: "count", trackingKey: "saves"),
+            SeasonGoal(title: "12 saves/game", targetValue: 12, currentValue: 8, unit: "saves/game", metricType: "rate", trackingKey: "saves_per_game")
+        ],
+        onboardingCompleted: true,
+        createdAt: Date()
+    )
+    
+    let sampleTeam = TeamInfo(
+        hsTeamName: "Westlake Warriors Lacrosse",
+        hsCity: "Austin",
+        hsState: "TX",
+        hasClubTeam: true,
+        clubTeamName: "Austin Elite LC",
+        clubCity: "Austin",
+        clubState: "TX"
+    )
+    
+    DashboardView(profile: sampleProfile, teamInfo: sampleTeam)
 }
-

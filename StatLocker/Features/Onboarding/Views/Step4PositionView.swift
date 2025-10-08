@@ -7,6 +7,7 @@
 //
 
 import SwiftUI
+import FirebaseAuth
 
 struct Step4PositionView: View {
     @Bindable var viewModel: OnboardingViewModel
@@ -133,17 +134,17 @@ struct Step4PositionView: View {
 // MARK: - Preview
 
 #Preview("Step 4 - Boys") {
-    let vm = OnboardingViewModel(user: MockUser())
+    let vm = OnboardingViewModel(userId: "preview", displayName: "John Doe", email: "john@example.com")
     vm.teamGender = "boys"
-    Step4PositionView(viewModel: vm)
+    return Step4PositionView(viewModel: vm)
         .background(Theme.Colors.background)
 }
 
 #Preview("Step 4 - Girls with Selection") {
-    let vm = OnboardingViewModel(user: MockUser())
+    let vm = OnboardingViewModel(userId: "preview", displayName: "John Doe", email: "john@example.com")
     vm.teamGender = "girls"
     vm.position = "Goalie"
-    Step4PositionView(viewModel: vm)
+    return Step4PositionView(viewModel: vm)
         .background(Theme.Colors.background)
 }
 

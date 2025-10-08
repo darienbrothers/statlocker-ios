@@ -159,14 +159,14 @@ struct ToneCard: View {
 // MARK: - Preview
 
 #Preview("Step 7 - Not Selected") {
-    Step7ToneQuizView(viewModel: OnboardingViewModel(user: MockUser()))
+    Step7ToneQuizView(viewModel: OnboardingViewModel(userId: "preview", displayName: "John Doe", email: "john@example.com"))
         .background(Theme.Colors.background)
 }
 
 #Preview("Step 7 - Hype Selected") {
-    let vm = OnboardingViewModel(user: MockUser())
+    let vm = OnboardingViewModel(userId: "preview", displayName: "John Doe", email: "john@example.com")
     vm.aiTone = "Hype"
-    Step7ToneQuizView(viewModel: vm)
+    return Step7ToneQuizView(viewModel: vm)
         .background(Theme.Colors.background)
 }
 

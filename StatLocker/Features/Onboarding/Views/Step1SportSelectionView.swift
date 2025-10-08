@@ -7,6 +7,7 @@
 //
 
 import SwiftUI
+import FirebaseAuth
 
 struct Step1SportSelectionView: View {
     @Bindable var viewModel: OnboardingViewModel
@@ -25,12 +26,12 @@ struct Step1SportSelectionView: View {
             // MARK: - Header
             
             VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
-                Text("Let's build your Locker")
-                    .font(Theme.Typography.headline(28))
+                Text("Hey \(viewModel.displayName) 👋 What sport do you play?")
+                    .font(Theme.Typography.headline(24))
                     .foregroundStyle(Theme.Colors.textPrimary)
                     .accessibilityAddTraits(.isHeader)
                 
-                Text("Choose your sport to get started.")
+                Text("Choose the sport you'll be tracking stats for.")
                     .font(Theme.Typography.body(16))
                     .foregroundStyle(Theme.Colors.textSecondary)
                     .fixedSize(horizontal: false, vertical: true)
@@ -42,28 +43,28 @@ struct Step1SportSelectionView: View {
             Spacer()
                 .frame(height: Theme.Spacing.xl)
             
-            // MARK: - Sports Grid
+            // MARK: - Sports List
             
-            LazyVGrid(columns: [
-                GridItem(.flexible(), spacing: Theme.Spacing.md),
-                GridItem(.flexible(), spacing: Theme.Spacing.md)
-            ], spacing: Theme.Spacing.md) {
-                ForEach(sports) { sport in
-                    SportCard(
-                        sport: sport,
-                        isSelected: viewModel.sport == sport.id,
-                        action: {
-                            if sport.isUnlocked {
-                                viewModel.sport = sport.id
-                                print("[StatLocker][Onboarding] Sport selected: \(sport.name)")
-                            } else {
-                                print("[StatLocker][Onboarding] Sport locked: \(sport.name)")
+            ScrollView {
+                VStack(spacing: Theme.Spacing.sm) {
+                    ForEach(sports) { sport in
+                        BorderedSelectionCard(
+                            title: "\(sport.icon) \(sport.name)",
+                            subtitle: sport.isUnlocked ? "Available now" : "Coming soon",
+                            isSelected: viewModel.sport == sport.id,
+                            action: {
+                                if sport.isUnlocked {
+                                    viewModel.sport = sport.id
+                                    print("[StatLocker][Onboarding] Selected sport: \(sport.name)")
+                                }
                             }
-                        }
-                    )
+                        )
+                        .disabled(!sport.isUnlocked)
+                        .opacity(sport.isUnlocked ? 1.0 : 0.6)
+                    }
                 }
+                .padding(.horizontal, Theme.Spacing.xl)
             }
-            .padding(.horizontal, Theme.Spacing.xl)
             
             Spacer()
                 .frame(height: Theme.Spacing.md)
@@ -162,14 +163,14 @@ struct SportCard: View {
 // MARK: - Preview
 
 #Preview("Step 1 - Default") {
-    Step1SportSelectionView(viewModel: OnboardingViewModel(user: MockUser()))
+    Step1SportSelectionView(viewModel: OnboardingViewModel(userId: "preview", displayName: "John Doe", email: "john@example.com"))
         .background(Theme.Colors.background)
 }
 
 #Preview("Step 1 - Lacrosse Selected") {
-    let vm = OnboardingViewModel(user: MockUser())
+    let vm = OnboardingViewModel(userId: "preview", displayName: "John Doe", email: "john@example.com")
     vm.sport = "lacrosse"
-    Step1SportSelectionView(viewModel: vm)
+    return Step1SportSelectionView(viewModel: vm)
         .background(Theme.Colors.background)
 }
 

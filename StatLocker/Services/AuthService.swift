@@ -29,9 +29,10 @@ protocol AuthServiceProtocol {
 
 // MARK: - Auth Service Implementation
 
-class AuthService: AuthServiceProtocol, ObservableObject {
-    @Published var currentUser: User?
-    @Published var isAuthenticated = false
+@Observable
+class AuthService: AuthServiceProtocol {
+    var currentUser: User?
+    var isAuthenticated = false
     
     private let auth = Auth.auth()
     

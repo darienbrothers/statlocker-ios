@@ -54,6 +54,8 @@ struct RootCoordinatorView: View {
     @State private var showOnboarding = false
     @State private var showDashboard = false
     @State private var isCheckingProfile = false
+    @State private var athleteProfile: AthleteProfile?
+    @State private var teamInfo: TeamInfo?
     
     var body: some View {
         Group {
@@ -77,7 +79,18 @@ struct RootCoordinatorView: View {
                         }
                     }
                 } else if showDashboard {
-                    DashboardView()
+                    if let profile = athleteProfile, let team = teamInfo {
+                        DashboardView(profile: profile, teamInfo: team)
+                    } else {
+                        // Fallback loading state
+                        VStack {
+                            ProgressView()
+                            Text("Loading Dashboard...")
+                                .font(Theme.Typography.body(14))
+                                .foregroundStyle(Theme.Colors.muted)
+                                .padding(.top, Theme.Spacing.sm)
+                        }
+                    }
                 } else {
                     // Default to checking profile
                     ProgressView()
@@ -89,6 +102,7 @@ struct RootCoordinatorView: View {
                 }
             } else {
                 WelcomeScreen()
+                    .environment(authService)
             }
         }
         .onChange(of: authService.currentUser) { oldValue, newValue in
@@ -130,9 +144,22 @@ struct RootCoordinatorView: View {
                 let profile = try profileDoc.data(as: AthleteProfile.self)
                 
                 if profile.onboardingCompleted {
-                    showOnboarding = false
-                    showDashboard = true
-                    print("[StatLocker][Boot] Profile found, showing dashboard")
+                    // Fetch team info for dashboard
+                    do {
+                        let team = try await ProfileService.shared.fetchTeamInfo(for: user.uid)
+                        athleteProfile = profile
+                        teamInfo = team
+                        showOnboarding = false
+                        showDashboard = true
+                        print("[StatLocker][Boot] Profile and team info loaded, showing dashboard")
+                    } catch {
+                        print("[StatLocker][Boot] Error loading team info: \(error)")
+                        // Still show dashboard with profile only
+                        athleteProfile = profile
+                        showOnboarding = false
+                        showDashboard = true
+                        print("[StatLocker][Boot] Profile found, showing dashboard (team info missing)")
+                    }
                 } else {
                     showOnboarding = true
                     showDashboard = false
