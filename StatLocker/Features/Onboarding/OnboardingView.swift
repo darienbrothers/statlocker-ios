@@ -40,7 +40,7 @@ struct OnboardingView: View {
                     .padding(.top, Theme.Spacing.md)
                 
                 // Segmented Progress Bar
-                SegmentedProgressBar(currentStep: coordinator.currentStep, totalSteps: 11)
+                SegmentedProgressBar(currentStep: coordinator.currentStep, totalSteps: 8)
             }
             
             // MARK: - Step Content
@@ -51,39 +51,24 @@ struct OnboardingView: View {
                     Step1SportSelectionView(viewModel: coordinator.viewModel)
                         .transition(.asymmetric(insertion: .move(edge: .trailing), removal: .move(edge: .leading)))
                 case 2:
-                    WelcomeJourneyView(name: coordinator.viewModel.displayName) {
-                        coordinator.nextStep()
-                    }
-                    .transition(.asymmetric(insertion: .move(edge: .trailing), removal: .move(edge: .leading)))
-                case 3:
                     Step2TeamGenderView(viewModel: coordinator.viewModel)
                         .transition(.asymmetric(insertion: .move(edge: .trailing), removal: .move(edge: .leading)))
-                case 4:
+                case 3:
                     Step3ProfileDetailsView(viewModel: coordinator.viewModel)
                         .transition(.asymmetric(insertion: .move(edge: .trailing), removal: .move(edge: .leading)))
-                case 5:
+                case 4:
                     Step4PositionView(viewModel: coordinator.viewModel)
                         .transition(.asymmetric(insertion: .move(edge: .trailing), removal: .move(edge: .leading)))
-                case 6:
+                case 5:
                     Step5TeamInfoView(viewModel: coordinator.viewModel)
                         .transition(.asymmetric(insertion: .move(edge: .trailing), removal: .move(edge: .leading)))
-                case 7:
+                case 6:
                     Step6SeasonGoalsView(viewModel: coordinator.viewModel)
                         .transition(.asymmetric(insertion: .move(edge: .trailing), removal: .move(edge: .leading)))
-                case 8:
-                    GoalsLockedInView(name: coordinator.viewModel.displayName) {
-                        coordinator.nextStep()
-                    }
-                    .transition(.asymmetric(insertion: .move(edge: .trailing), removal: .move(edge: .leading)))
-                case 9:
+                case 7:
                     Step7ToneQuizView(viewModel: coordinator.viewModel)
                         .transition(.asymmetric(insertion: .move(edge: .trailing), removal: .move(edge: .leading)))
-                case 10:
-                    AlmostThereView(name: coordinator.viewModel.displayName) {
-                        coordinator.nextStep()
-                    }
-                    .transition(.asymmetric(insertion: .move(edge: .trailing), removal: .move(edge: .leading)))
-                case 11:
+                case 8:
                     Step8ReviewView(viewModel: coordinator.viewModel) { step in
                         coordinator.goToStep(step)
                     }
@@ -94,10 +79,9 @@ struct OnboardingView: View {
             }
             .animation(.easeInOut(duration: 0.3), value: coordinator.currentStep)
             
-            // MARK: - Navigation Buttons (only for functional steps)
+            // MARK: - Navigation Buttons
             
-            if !isMotivationalStep(coordinator.currentStep) {
-                VStack(spacing: Theme.Spacing.md) {
+            VStack(spacing: Theme.Spacing.md) {
                     
                     // Error Message
                     if let error = coordinator.viewModel.errorMessage {
@@ -145,7 +129,6 @@ struct OnboardingView: View {
                     }
                 }
                 .padding(.vertical, Theme.Spacing.md)
-            }
         }
         .background(Theme.Colors.background)
         .onChange(of: coordinator.isCompleted) { oldValue, newValue in
@@ -156,12 +139,6 @@ struct OnboardingView: View {
         }
     }
     
-    // MARK: - Helper Functions
-    
-    /// Check if current step is a motivational screen
-    private func isMotivationalStep(_ step: Int) -> Bool {
-        return step == 2 || step == 8 || step == 10 // Welcome Journey, Goals Locked In, Almost There
-    }
 }
 
 // MARK: - Preview

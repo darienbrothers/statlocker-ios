@@ -45,13 +45,13 @@ struct Step7ToneQuizView: View {
             // MARK: - Header
             
             VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
-                Text("How should your AI Coach sound?")
-                    .font(Theme.Typography.headline(28))
+                Text("Your coach, your vibe, \(viewModel.displayName)")
+                    .font(Theme.Typography.headline(32))
                     .foregroundStyle(Theme.Colors.textPrimary)
                     .accessibilityAddTraits(.isHeader)
                 
-                Text("This shapes how we give you feedback.")
-                    .font(Theme.Typography.body(16))
+                Text("AI feedback tuned to how you compete.")
+                    .font(Theme.Typography.subhead(17))
                     .foregroundStyle(Theme.Colors.textSecondary)
                     .fixedSize(horizontal: false, vertical: true)
             }

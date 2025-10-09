@@ -52,12 +52,12 @@ class OnboardingCoordinator {
         viewModel.saveProgress()
         
         // Move to next step or complete
-        if currentStep < 11 {
+        if currentStep < 8 {
             currentStep += 1
             viewModel.currentStep = currentStep
             print("[StatLocker][Onboarding] Advanced to step \(currentStep)")
         } else {
-            // Step 11 complete - finalize onboarding
+            // Step 8 complete - finalize onboarding
             Task {
                 await completeOnboarding()
             }
@@ -82,7 +82,7 @@ class OnboardingCoordinator {
     
     /// Jump to specific step (for Edit from Review)
     func goToStep(_ step: Int) {
-        guard step >= 1 && step <= 11 else {
+        guard step >= 1 && step <= 8 else {
             print("[StatLocker][Onboarding] Invalid step number: \(step)")
             return
         }
@@ -113,12 +113,12 @@ class OnboardingCoordinator {
     
     /// Progress as a fraction (for progress bar)
     var progressFraction: Double {
-        Double(currentStep) / 11.0
+        Double(currentStep) / 8.0
     }
     
     /// Progress label for display
     var progressLabel: String {
-        "Step \(currentStep) of 11"
+        "Step \(currentStep) of 8"
     }
     
     /// Check if on first step
@@ -128,13 +128,13 @@ class OnboardingCoordinator {
     
     /// Check if on last step
     var isLastStep: Bool {
-        currentStep == 11
+        currentStep == 8
     }
     
     /// Button text based on step
     var continueButtonText: String {
-        if currentStep == 11 {
-            return "Enter Your Locker"
+        if currentStep == 8 {
+            return "Enter My Locker 🔓"
         } else {
             return "Continue"
         }

@@ -21,13 +21,13 @@ struct Step3ProfileDetailsView: View {
             // MARK: - Header
             
             VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
-                Text("Tell us about yourself")
-                    .font(Theme.Typography.headline(28))
+                Text("Class of \(viewModel.gradYear) awaits, \(viewModel.displayName)")
+                    .font(Theme.Typography.headline(32))
                     .foregroundStyle(Theme.Colors.textPrimary)
                     .accessibilityAddTraits(.isHeader)
                 
-                Text("We use this to build your recruiting timeline.")
-                    .font(Theme.Typography.body(16))
+                Text("Set the foundation for tracking your elite progression.")
+                    .font(Theme.Typography.subhead(17))
                     .foregroundStyle(Theme.Colors.textSecondary)
                     .fixedSize(horizontal: false, vertical: true)
             }
@@ -108,22 +108,36 @@ struct LevelChip: View {
     let isSelected: Bool
     let action: () -> Void
     
+    private var athleticBadge: String {
+        switch title {
+        case "Freshman": return "🔰"
+        case "JV": return "⭐"
+        case "Varsity": return "👑"
+        default: return ""
+        }
+    }
+    
     var body: some View {
         Button(action: action) {
-            Text(title)
-                .font(Theme.Typography.body(15))
-                .fontWeight(isSelected ? .semibold : .regular)
-                .foregroundStyle(isSelected ? .white : Theme.Colors.textPrimary)
-                .frame(maxWidth: .infinity)
-                .frame(height: 50) // 50pt for comfortable tap target
-                .background(
-                    RoundedRectangle(cornerRadius: 12, style: .continuous)
-                        .fill(isSelected ? Theme.Colors.primary : Theme.Colors.cardSurface)
-                )
-                .overlay(
-                    RoundedRectangle(cornerRadius: 12, style: .continuous)
-                        .stroke(isSelected ? Theme.Colors.primary : Theme.Colors.divider, lineWidth: isSelected ? 2 : 1)
-                )
+            HStack(spacing: Theme.Spacing.xs) {
+                Text(athleticBadge)
+                    .font(.system(size: 16))
+                
+                Text(title)
+                    .font(Theme.Typography.body(15))
+                    .fontWeight(isSelected ? .semibold : .regular)
+            }
+            .foregroundStyle(isSelected ? .white : Theme.Colors.textPrimary)
+            .frame(maxWidth: .infinity)
+            .frame(height: 50) // 50pt for comfortable tap target
+            .background(
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .fill(isSelected ? Theme.Colors.primary : Theme.Colors.cardSurface)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .stroke(isSelected ? Theme.Colors.primary : Theme.Colors.divider, lineWidth: isSelected ? 2 : 1)
+            )
         }
         .buttonStyle(.plain)
         .accessibilityLabel("\(title) level")

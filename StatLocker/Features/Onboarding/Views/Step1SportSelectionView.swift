@@ -26,13 +26,13 @@ struct Step1SportSelectionView: View {
             // MARK: - Header
             
             VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
-                Text("Hey \(viewModel.displayName) 👋 What sport do you play?")
-                    .font(Theme.Typography.headline(24))
+                Text("Ready to dominate, \(viewModel.displayName)?")
+                    .font(Theme.Typography.headline(32))
                     .foregroundStyle(Theme.Colors.textPrimary)
                     .accessibilityAddTraits(.isHeader)
                 
-                Text("Choose the sport you'll be tracking stats for.")
-                    .font(Theme.Typography.body(16))
+                Text("Choose your sport and unlock your athletic potential.")
+                    .font(Theme.Typography.subhead(17))
                     .foregroundStyle(Theme.Colors.textSecondary)
                     .fixedSize(horizontal: false, vertical: true)
             }

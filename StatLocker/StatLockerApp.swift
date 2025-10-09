@@ -51,6 +51,7 @@ struct StatLockerApp: App {
 
 struct RootCoordinatorView: View {
     @State private var authService = AuthService()
+    @State private var loadingManager = LoadingStateManager()
     @State private var showOnboarding = false
     @State private var showDashboard = false
     @State private var isCheckingProfile = false
@@ -59,7 +60,12 @@ struct RootCoordinatorView: View {
     
     var body: some View {
         Group {
-            if authService.isAuthenticated {
+            if loadingManager.isLoading {
+                SplashScreenView()
+                    .onAppear {
+                        loadingManager.startLoading()
+                    }
+            } else if authService.isAuthenticated {
                 if isCheckingProfile {
                     // Loading state while checking profile
                     VStack {
@@ -103,6 +109,10 @@ struct RootCoordinatorView: View {
             } else {
                 WelcomeScreen()
                     .environment(authService)
+                    .onAppear {
+                        // Complete loading for unauthenticated users
+                        loadingManager.forceCompleteLoading()
+                    }
             }
         }
         .onChange(of: authService.currentUser) { oldValue, newValue in
@@ -181,5 +191,8 @@ struct RootCoordinatorView: View {
             showDashboard = false
             isCheckingProfile = false
         }
+        
+        // Complete splash screen loading
+        loadingManager.forceCompleteLoading()
     }
 }

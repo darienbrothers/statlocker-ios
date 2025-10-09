@@ -18,13 +18,13 @@ struct Step2TeamGenderView: View {
             // MARK: - Header
             
             VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
-                Text("Let's build your Locker")
-                    .font(Theme.Typography.headline(28))
+                Text("Boys or girls game, \(viewModel.displayName)?")
+                    .font(Theme.Typography.headline(32))
                     .foregroundStyle(Theme.Colors.textPrimary)
                     .accessibilityAddTraits(.isHeader)
                 
-                Text("Every stat tells your story — start with the basics.")
-                    .font(Theme.Typography.body(16))
+                Text("Your stats, benchmarks, and competition level are built different.")
+                    .font(Theme.Typography.subhead(17))
                     .foregroundStyle(Theme.Colors.textSecondary)
                     .fixedSize(horizontal: false, vertical: true)
             }

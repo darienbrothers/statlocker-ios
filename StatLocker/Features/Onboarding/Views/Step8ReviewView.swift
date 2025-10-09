@@ -20,13 +20,13 @@ struct Step8ReviewView: View {
                 // MARK: - Header
                 
                 VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
-                    Text("You're all set!")
-                        .font(Theme.Typography.headline(28))
+                    Text("You're locked in, \(viewModel.displayName)")
+                        .font(Theme.Typography.headline(32))
                         .foregroundStyle(Theme.Colors.textPrimary)
                         .accessibilityAddTraits(.isHeader)
                     
-                    Text("Review your info before entering your Locker.")
-                        .font(Theme.Typography.body(16))
+                    Text("Your first game log is one tap away—let's go.")
+                        .font(Theme.Typography.subhead(17))
                         .foregroundStyle(Theme.Colors.textSecondary)
                         .fixedSize(horizontal: false, vertical: true)
                 }

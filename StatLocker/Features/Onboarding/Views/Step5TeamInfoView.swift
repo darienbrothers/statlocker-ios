@@ -27,13 +27,13 @@ struct Step5TeamInfoView: View {
                 // MARK: - Header
                 
                 VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
-                    Text("Where do you play?")
-                        .font(Theme.Typography.headline(28))
+                    Text("Claim your home turf, \(viewModel.displayName)")
+                        .font(Theme.Typography.headline(32))
                         .foregroundStyle(Theme.Colors.textPrimary)
                         .accessibilityAddTraits(.isHeader)
                     
-                    Text("We'll use this for your recruiting profile.")
-                        .font(Theme.Typography.body(16))
+                    Text("High school and club stats tracked separately, always.")
+                        .font(Theme.Typography.subhead(17))
                         .foregroundStyle(Theme.Colors.textSecondary)
                         .fixedSize(horizontal: false, vertical: true)
                 }

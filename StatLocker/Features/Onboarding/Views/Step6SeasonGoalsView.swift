@@ -28,8 +28,8 @@ struct Step6SeasonGoalsView: View {
             
             VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
                 HStack {
-                    Text("Pick your top 3 season goals")
-                        .font(Theme.Typography.headline(28))
+                    Text("Set 3 targets, \(viewModel.displayName)")
+                        .font(Theme.Typography.headline(32))
                         .foregroundStyle(Theme.Colors.textPrimary)
                         .accessibilityAddTraits(.isHeader)
                     
@@ -44,8 +44,8 @@ struct Step6SeasonGoalsView: View {
                         .accessibilityLabel("\(selectedCount) of 3 goals selected")
                 }
                 
-                Text("These keep you locked in all season.")
-                    .font(Theme.Typography.body(16))
+                Text("Elite athletes chase numbers all season. Pick yours.")
+                    .font(Theme.Typography.subhead(17))
                     .foregroundStyle(Theme.Colors.textSecondary)
                     .fixedSize(horizontal: false, vertical: true)
             }

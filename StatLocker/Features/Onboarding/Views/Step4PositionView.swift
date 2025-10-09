@@ -18,13 +18,13 @@ struct Step4PositionView: View {
             // MARK: - Header
             
             VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
-                Text("What's your primary position?")
-                    .font(Theme.Typography.headline(28))
+                Text("Lock in your position, \(viewModel.displayName)")
+                    .font(Theme.Typography.headline(32))
                     .foregroundStyle(Theme.Colors.textPrimary)
                     .accessibilityAddTraits(.isHeader)
                 
-                Text("Your position shapes the stats we track.")
-                    .font(Theme.Typography.body(16))
+                Text("Each position has elite-level metrics we'll track for you.")
+                    .font(Theme.Typography.subhead(17))
                     .foregroundStyle(Theme.Colors.textSecondary)
                     .fixedSize(horizontal: false, vertical: true)
             }
