@@ -354,6 +354,12 @@ class DashboardViewModel {
         }
     }
     
+    /// Refresh games and update all dashboard data
+    func refresh() async {
+        print("[StatLocker][Dashboard] Refreshing dashboard data...")
+        await loadGames()
+    }
+    
     // MARK: - Initialization
     
     init(profile: AthleteProfile, teamInfo: TeamInfo, gameService: GameService = GameService.shared) {

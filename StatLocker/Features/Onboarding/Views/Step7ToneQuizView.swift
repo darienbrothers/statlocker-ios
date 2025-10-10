@@ -40,53 +40,49 @@ struct Step7ToneQuizView: View {
     ]
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
+        VStack(spacing: Theme.Spacing.xl) {
+            Spacer()
             
             // MARK: - Header
-            
-            VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
-                Text("Your coach, your vibe, \(viewModel.displayName)")
-                    .font(Theme.Typography.headline(32))
+            VStack(spacing: Theme.Spacing.md) {
+                Text("How should your AI coach talk to you?")
+                    .font(Theme.Typography.headline(28))
                     .foregroundStyle(Theme.Colors.textPrimary)
+                    .multilineTextAlignment(.center)
                     .accessibilityAddTraits(.isHeader)
                 
-                Text("AI feedback tuned to how you compete.")
-                    .font(Theme.Typography.subhead(17))
+                Text("Choose the coaching style that motivates you most")
+                    .font(Theme.Typography.body(16))
                     .foregroundStyle(Theme.Colors.textSecondary)
-                    .fixedSize(horizontal: false, vertical: true)
+                    .multilineTextAlignment(.center)
             }
-            .padding(.horizontal, Theme.Spacing.xl)
-            .padding(.top, Theme.Spacing.xxl)
-            .padding(.bottom, Theme.Spacing.xl)
             
             // MARK: - Tone Cards
-            
-            ScrollView {
-                VStack(spacing: Theme.Spacing.md) {
-                    ForEach(toneOptions) { tone in
-                        ToneCard(
-                            tone: tone,
-                            isSelected: viewModel.aiTone == tone.id,
-                            action: {
-                                viewModel.aiTone = tone.id
-                                print("[StatLocker][Onboarding] Tone selected: \(tone.id)")
-                            }
-                        )
-                    }
+            VStack(spacing: Theme.Spacing.md) {
+                ForEach(toneOptions) { tone in
+                    ToneSelectionCard(
+                        tone: tone,
+                        isSelected: viewModel.aiTone == tone.id,
+                        action: {
+                            viewModel.aiTone = tone.id
+                            print("[StatLocker][Onboarding] Tone selected: \(tone.id)")
+                        }
+                    )
                 }
-                .padding(.horizontal, Theme.Spacing.xl)
-                
-                Spacer()
-                    .frame(height: Theme.Spacing.md)
-                
-                // Helper Text
-                Text("You can change this anytime in Settings.")
-                    .font(Theme.Typography.caption(14))
-                    .foregroundStyle(Theme.Colors.muted)
-                    .frame(maxWidth: .infinity, alignment: .center)
-                    .padding(.bottom, Theme.Spacing.xl)
             }
+            .padding(.horizontal, Theme.Spacing.xl)
+            
+            Spacer()
+            
+            // Helper Text
+            Text("You can change this anytime in Settings.")
+                .font(Theme.Typography.caption(14))
+                .foregroundStyle(Theme.Colors.textTertiary)
+                .frame(maxWidth: .infinity, alignment: .center)
+                .padding(.horizontal, Theme.Spacing.xl)
         }
+        .padding(Theme.Spacing.xl)
+        .background(Theme.Colors.backgroundPrimary)
     }
 }
 
@@ -99,9 +95,9 @@ struct ToneOption: Identifiable {
     let example: String
 }
 
-// MARK: - Tone Card Component
+// MARK: - Tone Selection Card Component
 
-struct ToneCard: View {
+struct ToneSelectionCard: View {
     let tone: ToneOption
     let isSelected: Bool
     let action: () -> Void
@@ -109,7 +105,6 @@ struct ToneCard: View {
     var body: some View {
         Button(action: action) {
             VStack(alignment: .leading, spacing: Theme.Spacing.md) {
-                
                 // Header
                 HStack(spacing: Theme.Spacing.sm) {
                     Text(tone.icon)
@@ -125,7 +120,11 @@ struct ToneCard: View {
                     if isSelected {
                         Image(systemName: "checkmark.circle.fill")
                             .font(.system(size: 24))
-                            .foregroundStyle(Theme.Colors.accentEmerald)
+                            .foregroundStyle(Theme.Colors.primary)
+                    } else {
+                        Image(systemName: "circle")
+                            .font(.system(size: 24))
+                            .foregroundStyle(Theme.Colors.divider)
                     }
                 }
                 
@@ -137,17 +136,17 @@ struct ToneCard: View {
                     .fixedSize(horizontal: false, vertical: true)
             }
             .padding(Theme.Spacing.lg)
-            .background(
-                RoundedRectangle(cornerRadius: 16, style: .continuous)
-                    .fill(isSelected ? Theme.Colors.accentEmerald.opacity(0.05) : Theme.Colors.cardSurface)
-            )
+            .background(Theme.Colors.backgroundSecondary)
             .overlay(
-                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                RoundedRectangle(cornerRadius: 16)
                     .stroke(
-                        isSelected ? Theme.Colors.accentEmerald : Theme.Colors.divider,
+                        isSelected ? Theme.Colors.primary : Theme.Colors.divider,
                         lineWidth: isSelected ? 2 : 1
                     )
             )
+            .clipShape(RoundedRectangle(cornerRadius: 16))
+            .scaleEffect(isSelected ? 1.02 : 1.0)
+            .animation(.easeInOut(duration: 0.2), value: isSelected)
         }
         .buttonStyle(.plain)
         .accessibilityLabel("\(tone.name) tone")
@@ -160,13 +159,11 @@ struct ToneCard: View {
 
 #Preview("Step 7 - Not Selected") {
     Step7ToneQuizView(viewModel: OnboardingViewModel(userId: "preview", displayName: "John Doe", email: "john@example.com"))
-        .background(Theme.Colors.background)
 }
 
 #Preview("Step 7 - Hype Selected") {
     let vm = OnboardingViewModel(userId: "preview", displayName: "John Doe", email: "john@example.com")
     vm.aiTone = "Hype"
     return Step7ToneQuizView(viewModel: vm)
-        .background(Theme.Colors.background)
 }
 

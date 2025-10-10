@@ -9,7 +9,9 @@
 import SwiftUI
 
 struct FABButton: View {
+    let profile: AthleteProfile
     @State private var showSheet = false
+    @State private var showAfterGame = false
     
     var body: some View {
         Button(action: { 
@@ -25,9 +27,18 @@ struct FABButton: View {
                 .themedShadow(Theme.Shadows.elevated)
         }
         .sheet(isPresented: $showSheet) {
-            LogGameSheet()
-                .presentationDetents([.height(320)])
-                .presentationDragIndicator(.visible)
+            LogGameSheet(
+                profile: profile,
+                onAfterGameTap: {
+                    showSheet = false
+                    showAfterGame = true
+                }
+            )
+            .presentationDetents([.height(320)])
+            .presentationDragIndicator(.visible)
+        }
+        .sheet(isPresented: $showAfterGame) {
+            AfterGameView(profile: profile)
         }
         .accessibilityLabel("Log a game")
         .accessibilityHint("Opens game logging options")
@@ -35,6 +46,8 @@ struct FABButton: View {
 }
 
 struct LogGameSheet: View {
+    let profile: AthleteProfile
+    let onAfterGameTap: () -> Void
     @Environment(\.dismiss) var dismiss
     
     var body: some View {
@@ -52,7 +65,7 @@ struct LogGameSheet: View {
                     title: "Live Game",
                     subtitle: "Track in real-time with timer"
                 ) {
-                    // TODO: Navigate to Live Game (B-005)
+                    // TODO: Navigate to Live Game (B-005 Phase 2)
                     print("[StatLocker][Dashboard] Live Game selected")
                     dismiss()
                 }
@@ -62,9 +75,8 @@ struct LogGameSheet: View {
                     title: "After Game",
                     subtitle: "Quick entry after the game"
                 ) {
-                    // TODO: Navigate to After Game (B-005)
                     print("[StatLocker][Dashboard] After Game selected")
-                    dismiss()
+                    onAfterGameTap()
                 }
                 
                 LogOptionButton(
@@ -72,7 +84,7 @@ struct LogGameSheet: View {
                     title: "Scan Stats Sheet",
                     subtitle: "OCR - Optical Character Recognition"
                 ) {
-                    // TODO: Navigate to OCR (B-005)
+                    // TODO: Navigate to OCR (B-005 Phase 3)
                     print("[StatLocker][Dashboard] OCR Scan selected")
                     dismiss()
                 }
@@ -121,8 +133,24 @@ struct LogOptionButton: View {
 }
 
 #Preview {
+    let sampleProfile = AthleteProfile(
+        userId: "123",
+        firstName: "Jordan",
+        lastName: "Smith",
+        email: "jordan@example.com",
+        sport: "lacrosse",
+        teamGender: "boys",
+        gradYear: 2026,
+        level: "Varsity",
+        position: "Goalie",
+        aiTone: "Mentor",
+        seasonGoals: [],
+        onboardingCompleted: true,
+        createdAt: Date()
+    )
+    
     VStack {
-        FABButton()
+        FABButton(profile: sampleProfile)
         Spacer()
     }
     .padding()

@@ -21,195 +21,185 @@ struct Step5TeamInfoView: View {
     ]
     
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 0) {
+        VStack(spacing: Theme.Spacing.xl) {
+            Spacer()
+            
+            // MARK: - Header
+            VStack(spacing: Theme.Spacing.md) {
+                Text("Tell us about your team")
+                    .font(Theme.Typography.headline(28))
+                    .foregroundStyle(Theme.Colors.textPrimary)
+                    .multilineTextAlignment(.center)
+                    .accessibilityAddTraits(.isHeader)
                 
-                // MARK: - Header
-                
-                VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
-                    Text("Claim your home turf, \(viewModel.displayName)")
-                        .font(Theme.Typography.headline(32))
-                        .foregroundStyle(Theme.Colors.textPrimary)
-                        .accessibilityAddTraits(.isHeader)
-                    
-                    Text("High school and club stats tracked separately, always.")
-                        .font(Theme.Typography.subhead(17))
-                        .foregroundStyle(Theme.Colors.textSecondary)
-                        .fixedSize(horizontal: false, vertical: true)
-                }
-                .padding(.horizontal, Theme.Spacing.xl)
-                .padding(.top, Theme.Spacing.xxl)
-                .padding(.bottom, Theme.Spacing.xl)
+                Text("High school and club stats are tracked separately")
+                    .font(Theme.Typography.body(16))
+                    .foregroundStyle(Theme.Colors.textSecondary)
+                    .multilineTextAlignment(.center)
+            }
+            
+            // MARK: - Team Information Form
+            VStack(spacing: Theme.Spacing.lg) {
                 
                 // MARK: - High School Team
-                
-                VStack(alignment: .leading, spacing: Theme.Spacing.md) {
-                    
+                VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
                     Text("High School Team")
                         .font(Theme.Typography.body(15))
                         .fontWeight(.medium)
                         .foregroundStyle(Theme.Colors.textPrimary)
                     
-                    // Team Name
-                    TextField("Team name (e.g., Duxbury High School)", text: $viewModel.hsTeamName)
-                        .font(Theme.Typography.body(17))
-                        .padding(Theme.Spacing.md)
-                        .frame(height: 50)
-                        .background(Theme.Colors.cardSurface)
-                        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 12, style: .continuous)
-                                .stroke(Theme.Colors.divider, lineWidth: 1)
+                    VStack(spacing: Theme.Spacing.md) {
+                        // Team Name
+                        TeamInfoField(
+                            placeholder: "Team name (e.g., Duxbury High School)",
+                            text: $viewModel.hsTeamName
                         )
-                        .accessibilityLabel("High school team name")
-                    
-                    // City
-                    TextField("City", text: $viewModel.hsCity)
-                        .font(Theme.Typography.body(17))
-                        .padding(Theme.Spacing.md)
-                        .frame(height: 50)
-                        .background(Theme.Colors.cardSurface)
-                        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 12, style: .continuous)
-                                .stroke(Theme.Colors.divider, lineWidth: 1)
+                        
+                        // City
+                        TeamInfoField(
+                            placeholder: "City",
+                            text: $viewModel.hsCity
                         )
-                        .accessibilityLabel("City")
-                    
-                    // State Picker
-                    Menu {
-                        ForEach(usStates, id: \.self) { state in
-                            Button(state) {
-                                viewModel.hsState = state
-                                print("[StatLocker][Onboarding] HS state selected: \(state)")
-                            }
-                        }
-                    } label: {
-                        HStack {
-                            Text(viewModel.hsState.isEmpty ? "Select State" : viewModel.hsState)
-                                .font(Theme.Typography.body(17))
-                                .foregroundStyle(viewModel.hsState.isEmpty ? Theme.Colors.muted : Theme.Colors.textPrimary)
-                            
-                            Spacer()
-                            
-                            Image(systemName: "chevron.down")
-                                .font(.system(size: 14))
-                                .foregroundStyle(Theme.Colors.muted)
-                        }
-                        .padding(Theme.Spacing.md)
-                        .frame(height: 50)
-                        .background(Theme.Colors.cardSurface)
-                        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 12, style: .continuous)
-                                .stroke(Theme.Colors.divider, lineWidth: 1)
+                        
+                        // State Picker
+                        StatePickerField(
+                            selectedState: $viewModel.hsState,
+                            states: usStates
                         )
                     }
-                    .accessibilityLabel("Select state")
                 }
-                .padding(.horizontal, Theme.Spacing.xl)
+                .padding(Theme.Spacing.lg)
+                .background(Theme.Colors.backgroundSecondary)
+                .clipShape(RoundedRectangle(cornerRadius: 12))
                 
                 Spacer()
                     .frame(height: Theme.Spacing.xl)
                 
                 // MARK: - Club Toggle
-                
-                VStack(alignment: .leading, spacing: Theme.Spacing.md) {
-                    
+                VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
                     Toggle(isOn: $viewModel.hasClubTeam) {
                         Text("I also play for a club team")
                             .font(Theme.Typography.body(16))
                             .foregroundStyle(Theme.Colors.textPrimary)
                     }
-                    .tint(Theme.Colors.accentEmerald)
+                    .tint(Theme.Colors.primary)
                     .onChange(of: viewModel.hasClubTeam) { oldValue, newValue in
                         print("[StatLocker][Onboarding] Club toggle: \(newValue)")
                     }
                     
                     Text("Club stats will be tracked separately from HS.")
                         .font(Theme.Typography.caption(14))
-                        .foregroundStyle(Theme.Colors.muted)
+                        .foregroundStyle(Theme.Colors.textSecondary)
                 }
-                .padding(.horizontal, Theme.Spacing.xl)
+                .padding(Theme.Spacing.lg)
+                .background(Theme.Colors.backgroundSecondary)
+                .clipShape(RoundedRectangle(cornerRadius: 12))
                 
                 // MARK: - Club Team (Conditional)
-                
                 if viewModel.hasClubTeam {
-                    Spacer()
-                        .frame(height: Theme.Spacing.xl)
-                    
-                    VStack(alignment: .leading, spacing: Theme.Spacing.md) {
-                        
+                    VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
                         Text("Club Team")
                             .font(Theme.Typography.body(15))
                             .fontWeight(.medium)
                             .foregroundStyle(Theme.Colors.textPrimary)
                         
-                        // Club Team Name
-                        TextField("Club team name", text: $viewModel.clubTeamName)
-                            .font(Theme.Typography.body(17))
-                            .padding(Theme.Spacing.md)
-                            .frame(height: 50)
-                            .background(Theme.Colors.cardSurface)
-                            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 12, style: .continuous)
-                                    .stroke(Theme.Colors.divider, lineWidth: 1)
+                        VStack(spacing: Theme.Spacing.md) {
+                            // Club Organization
+                            TeamInfoField(
+                                placeholder: "Club organization (e.g., Boston Lacrosse Club)",
+                                text: $viewModel.clubOrganization
                             )
-                            .accessibilityLabel("Club team name")
-                        
-                        // Club City
-                        TextField("City", text: $viewModel.clubCity)
-                            .font(Theme.Typography.body(17))
-                            .padding(Theme.Spacing.md)
-                            .frame(height: 50)
-                            .background(Theme.Colors.cardSurface)
-                            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 12, style: .continuous)
-                                    .stroke(Theme.Colors.divider, lineWidth: 1)
+                            
+                            // Club Team Name
+                            TeamInfoField(
+                                placeholder: "Team name (e.g., U17 Elite)",
+                                text: $viewModel.clubTeamName
                             )
-                            .accessibilityLabel("Club city")
-                        
-                        // Club State Picker
-                        Menu {
-                            ForEach(usStates, id: \.self) { state in
-                                Button(state) {
-                                    viewModel.clubState = state
-                                    print("[StatLocker][Onboarding] Club state selected: \(state)")
-                                }
-                            }
-                        } label: {
-                            HStack {
-                                Text(viewModel.clubState.isEmpty ? "Select State" : viewModel.clubState)
-                                    .font(Theme.Typography.body(17))
-                                    .foregroundStyle(viewModel.clubState.isEmpty ? Theme.Colors.muted : Theme.Colors.textPrimary)
-                                
-                                Spacer()
-                                
-                                Image(systemName: "chevron.down")
-                                    .font(.system(size: 14))
-                                    .foregroundStyle(Theme.Colors.muted)
-                            }
-                            .padding(Theme.Spacing.md)
-                            .frame(height: 50)
-                            .background(Theme.Colors.cardSurface)
-                            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 12, style: .continuous)
-                                    .stroke(Theme.Colors.divider, lineWidth: 1)
+                            
+                            // Club City
+                            TeamInfoField(
+                                placeholder: "City",
+                                text: $viewModel.clubCity
+                            )
+                            
+                            // Club State Picker
+                            StatePickerField(
+                                selectedState: $viewModel.clubState,
+                                states: usStates
                             )
                         }
-                        .accessibilityLabel("Select club state")
                     }
-                    .padding(.horizontal, Theme.Spacing.xl)
-                    .transition(.move(edge: .top).combined(with: .opacity))
+                    .padding(Theme.Spacing.lg)
+                    .background(Theme.Colors.backgroundSecondary)
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
                 }
+            }
+            .padding(.horizontal, Theme.Spacing.xl)
+            
+            Spacer()
+        }
+        .padding(Theme.Spacing.xl)
+        .background(Theme.Colors.backgroundPrimary)
+    }
+}
+
+// MARK: - Team Info Field Component
+
+struct TeamInfoField: View {
+    let placeholder: String
+    @Binding var text: String
+    
+    var body: some View {
+        TextField(placeholder, text: $text)
+            .font(Theme.Typography.body(17))
+            .textFieldStyle(.plain)
+            .padding(Theme.Spacing.md)
+            .frame(height: 50)
+            .background(Theme.Colors.backgroundTertiary)
+            .overlay(
+                RoundedRectangle(cornerRadius: 12)
+                    .stroke(Theme.Colors.divider, lineWidth: 1)
+            )
+            .clipShape(RoundedRectangle(cornerRadius: 12))
+    }
+}
+
+// MARK: - State Picker Field Component
+
+struct StatePickerField: View {
+    @Binding var selectedState: String
+    let states: [String]
+    
+    var body: some View {
+        Menu {
+            ForEach(states, id: \.self) { state in
+                Button(state) {
+                    selectedState = state
+                    print("[StatLocker][Onboarding] State selected: \(state)")
+                }
+            }
+        } label: {
+            HStack {
+                Text(selectedState.isEmpty ? "Select State" : selectedState)
+                    .font(Theme.Typography.body(17))
+                    .foregroundStyle(selectedState.isEmpty ? Theme.Colors.textTertiary : Theme.Colors.textPrimary)
                 
                 Spacer()
-                    .frame(height: Theme.Spacing.xl)
+                
+                Image(systemName: "chevron.down")
+                    .font(.system(size: 14))
+                    .foregroundStyle(Theme.Colors.textSecondary)
             }
+            .padding(Theme.Spacing.md)
+            .frame(height: 50)
+            .background(Theme.Colors.backgroundTertiary)
+            .overlay(
+                RoundedRectangle(cornerRadius: 12)
+                    .stroke(Theme.Colors.divider, lineWidth: 1)
+            )
+            .clipShape(RoundedRectangle(cornerRadius: 12))
         }
+        .accessibilityLabel("Select state")
     }
 }
 
@@ -217,7 +207,6 @@ struct Step5TeamInfoView: View {
 
 #Preview("Step 5 - HS Only") {
     Step5TeamInfoView(viewModel: OnboardingViewModel(userId: "preview", displayName: "John Doe", email: "john@example.com"))
-        .background(Theme.Colors.background)
 }
 
 #Preview("Step 5 - With Club") {
@@ -226,7 +215,8 @@ struct Step5TeamInfoView: View {
     vm.hsTeamName = "Duxbury High School"
     vm.hsCity = "Duxbury"
     vm.hsState = "MA"
+    vm.clubOrganization = "Boston Lacrosse Club"
+    vm.clubTeamName = "U17 Elite"
     return Step5TeamInfoView(viewModel: vm)
-        .background(Theme.Colors.background)
 }
 

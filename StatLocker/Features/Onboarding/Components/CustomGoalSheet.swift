@@ -42,6 +42,7 @@ struct CustomGoalSheet: View {
                         
                         TextField("e.g., Improve weak-side coverage", text: $goalTitle)
                             .font(Theme.Typography.body(17))
+                            .foregroundStyle(Theme.Colors.textPrimary)
                             .padding(Theme.Spacing.md)
                             .frame(height: 50)
                             .background(Theme.Colors.cardSurface)
@@ -61,6 +62,7 @@ struct CustomGoalSheet: View {
                         
                         TextField("e.g., 50", text: $targetValue)
                             .font(Theme.Typography.body(17))
+                            .foregroundStyle(Theme.Colors.textPrimary)
                             .keyboardType(.decimalPad)
                             .padding(Theme.Spacing.md)
                             .frame(height: 50)
@@ -81,6 +83,7 @@ struct CustomGoalSheet: View {
                         
                         TextField("e.g., games, saves", text: $unit)
                             .font(Theme.Typography.body(17))
+                            .foregroundStyle(Theme.Colors.textPrimary)
                             .padding(Theme.Spacing.md)
                             .frame(height: 50)
                             .background(Theme.Colors.cardSurface)

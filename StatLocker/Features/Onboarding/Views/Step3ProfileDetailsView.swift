@@ -16,88 +16,121 @@ struct Step3ProfileDetailsView: View {
     private let levels = ["Freshman", "JV", "Varsity"]
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
+        VStack(spacing: Theme.Spacing.xl) {
+            Spacer()
             
             // MARK: - Header
-            
-            VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
-                Text("Class of \(viewModel.gradYear) awaits, \(viewModel.displayName)")
-                    .font(Theme.Typography.headline(32))
+            VStack(spacing: Theme.Spacing.md) {
+                Text("What's your name?")
+                    .font(Theme.Typography.headline(28))
                     .foregroundStyle(Theme.Colors.textPrimary)
+                    .multilineTextAlignment(.center)
                     .accessibilityAddTraits(.isHeader)
                 
-                Text("Set the foundation for tracking your elite progression.")
-                    .font(Theme.Typography.subhead(17))
+                Text("Tell us a bit about yourself")
+                    .font(Theme.Typography.body(16))
                     .foregroundStyle(Theme.Colors.textSecondary)
-                    .fixedSize(horizontal: false, vertical: true)
+                    .multilineTextAlignment(.center)
+            }
+            
+            // MARK: - Profile Details Form
+            VStack(spacing: Theme.Spacing.lg) {
+                // Name Field
+                ProfileDetailField(
+                    title: "Full Name",
+                    placeholder: "Enter your name",
+                    text: $viewModel.displayName
+                )
+                
+                // Graduation Year
+                VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
+                    Text("Graduation Year")
+                        .font(Theme.Typography.body(15))
+                        .fontWeight(.medium)
+                        .foregroundStyle(Theme.Colors.textPrimary)
+                    
+                    Picker("Graduation Year", selection: $viewModel.gradYear) {
+                        ForEach(gradYears, id: \.self) { year in
+                            Text(String(year))
+                                .font(Theme.Typography.body(17))
+                                .foregroundStyle(Theme.Colors.textPrimary)
+                                .tag(year)
+                        }
+                    }
+                    .pickerStyle(.wheel)
+                    .frame(height: 120)
+                    .clipped()
+                    .onChange(of: viewModel.gradYear) { oldValue, newValue in
+                        print("[StatLocker][Onboarding] Grad year selected: \(newValue)")
+                    }
+                    .accessibilityLabel("Select graduation year")
+                }
+                .padding(Theme.Spacing.lg)
+                .background(Theme.Colors.backgroundSecondary)
+                .clipShape(RoundedRectangle(cornerRadius: 12))
+                
+                // Level Selection
+                VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
+                    Text("Current Level")
+                        .font(Theme.Typography.body(15))
+                        .fontWeight(.medium)
+                        .foregroundStyle(Theme.Colors.textPrimary)
+                    
+                    HStack(spacing: Theme.Spacing.sm) {
+                        ForEach(levels, id: \.self) { level in
+                            LevelChip(
+                                title: level,
+                                isSelected: viewModel.level == level,
+                                action: {
+                                    viewModel.level = level
+                                    print("[StatLocker][Onboarding] Level selected: \(level)")
+                                }
+                            )
+                        }
+                    }
+                }
+                .padding(Theme.Spacing.lg)
+                .background(Theme.Colors.backgroundSecondary)
+                .clipShape(RoundedRectangle(cornerRadius: 12))
             }
             .padding(.horizontal, Theme.Spacing.xl)
-            .padding(.top, Theme.Spacing.xxl)
-            .padding(.bottom, Theme.Spacing.xl)
-            
-            Spacer()
-                .frame(height: Theme.Spacing.xl)
-            
-            // MARK: - Grad Year Picker
-            
-            VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
-                Text("Graduation Year")
-                    .font(Theme.Typography.body(15))
-                    .fontWeight(.medium)
-                    .foregroundStyle(Theme.Colors.textPrimary)
-                    .padding(.horizontal, Theme.Spacing.xl)
-                
-                Picker("Graduation Year", selection: $viewModel.gradYear) {
-                    ForEach(gradYears, id: \.self) { year in
-                        Text(String(year))
-                            .font(Theme.Typography.body(17))
-                            .tag(year)
-                    }
-                }
-                .pickerStyle(.wheel)
-                .frame(height: 120)
-                .onChange(of: viewModel.gradYear) { oldValue, newValue in
-                    print("[StatLocker][Onboarding] Grad year selected: \(newValue)")
-                }
-                .accessibilityLabel("Select graduation year")
-            }
-            
-            Spacer()
-                .frame(height: Theme.Spacing.xl)
-            
-            // MARK: - Level Chips
-            
-            VStack(alignment: .leading, spacing: Theme.Spacing.md) {
-                Text("Current Level")
-                    .font(Theme.Typography.body(15))
-                    .fontWeight(.medium)
-                    .foregroundStyle(Theme.Colors.textPrimary)
-                    .padding(.horizontal, Theme.Spacing.xl)
-                
-                HStack(spacing: Theme.Spacing.sm) {
-                    ForEach(levels, id: \.self) { level in
-                        LevelChip(
-                            title: level,
-                            isSelected: viewModel.level == level,
-                            action: {
-                                viewModel.level = level
-                                print("[StatLocker][Onboarding] Level selected: \(level)")
-                            }
-                        )
-                    }
-                }
-                .padding(.horizontal, Theme.Spacing.xl)
-                
-                // Helper Text
-                Text("Your level helps us suggest realistic season goals.")
-                    .font(Theme.Typography.caption(14))
-                    .foregroundStyle(Theme.Colors.muted)
-                    .padding(.horizontal, Theme.Spacing.xl)
-                    .padding(.top, Theme.Spacing.xs)
-            }
             
             Spacer()
         }
+        .padding(Theme.Spacing.xl)
+        .background(Theme.Colors.backgroundPrimary)
+    }
+}
+
+// MARK: - Profile Detail Field Component
+
+struct ProfileDetailField: View {
+    let title: String
+    let placeholder: String
+    @Binding var text: String
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
+            Text(title)
+                .font(Theme.Typography.body(15))
+                .fontWeight(.medium)
+                .foregroundStyle(Theme.Colors.textPrimary)
+            
+            TextField(placeholder, text: $text)
+                .font(Theme.Typography.body(17))
+                .textFieldStyle(.plain)
+                .padding(Theme.Spacing.md)
+                .background(Theme.Colors.backgroundSecondary)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 12)
+                        .stroke(Theme.Colors.divider, lineWidth: 1)
+                )
+                .clipShape(RoundedRectangle(cornerRadius: 12))
+                .accessibilityLabel(title)
+        }
+        .padding(Theme.Spacing.lg)
+        .background(Theme.Colors.backgroundSecondary)
+        .clipShape(RoundedRectangle(cornerRadius: 12))
     }
 }
 
@@ -129,13 +162,13 @@ struct LevelChip: View {
             }
             .foregroundStyle(isSelected ? .white : Theme.Colors.textPrimary)
             .frame(maxWidth: .infinity)
-            .frame(height: 50) // 50pt for comfortable tap target
+            .frame(height: 50)
             .background(
-                RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    .fill(isSelected ? Theme.Colors.primary : Theme.Colors.cardSurface)
+                RoundedRectangle(cornerRadius: 12)
+                    .fill(isSelected ? Theme.Colors.primary : Theme.Colors.backgroundSecondary)
             )
             .overlay(
-                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                RoundedRectangle(cornerRadius: 12)
                     .stroke(isSelected ? Theme.Colors.primary : Theme.Colors.divider, lineWidth: isSelected ? 2 : 1)
             )
         }
@@ -150,7 +183,6 @@ struct LevelChip: View {
 
 #Preview("Step 3 - Default") {
     Step3ProfileDetailsView(viewModel: OnboardingViewModel(userId: "preview", displayName: "John Doe", email: "john@example.com"))
-        .background(Theme.Colors.background)
 }
 
 #Preview("Step 3 - Varsity Selected") {
@@ -158,6 +190,5 @@ struct LevelChip: View {
     vm.gradYear = 2026
     vm.level = "Varsity"
     return Step3ProfileDetailsView(viewModel: vm)
-        .background(Theme.Colors.background)
 }
 

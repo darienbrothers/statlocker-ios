@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import SwiftUI
 import FirebaseAuth
 import FirebaseFirestore
 
@@ -21,6 +22,10 @@ class OnboardingViewModel {
     var firstName: String
     var lastName: String
     var email: String
+    
+    // MARK: - Step 0: Profile Picture
+    
+    var profileImage: UIImage? = nil
     
     // MARK: - Step 1: Sport Selection
     
@@ -45,7 +50,8 @@ class OnboardingViewModel {
     var hsCity: String = ""
     var hsState: String = ""
     var hasClubTeam: Bool = false
-    var clubTeamName: String = ""
+    var clubOrganization: String = "" // e.g., "Boston Lacrosse Club"
+    var clubTeamName: String = "" // e.g., "U17 Elite"
     var clubCity: String = ""
     var clubState: String = ""
     
@@ -84,8 +90,15 @@ class OnboardingViewModel {
         self.lastName = displayName?.components(separatedBy: " ").last ?? ""
         self.email = email ?? ""
         
+        // Load any saved progress, but ensure we start at step 0 for new users
         loadProgress()
-        print("[StatLocker][Onboarding] Initialized for user: \(userId)")
+        
+        // If no saved progress was found, ensure we're at step 0
+        if currentStep == 0 && sport.isEmpty {
+            print("[StatLocker][Onboarding] New user - starting at step 0 (profile picture)")
+        }
+        
+        print("[StatLocker][Onboarding] Initialized for user: \(userId) at step \(currentStep)")
     }
     
     /// Convenience initializer for FirebaseAuth.User
@@ -100,6 +113,10 @@ class OnboardingViewModel {
         errorMessage = nil
         
         switch currentStep {
+        case 0:
+            // Step 0: Profile Picture (optional - no validation needed)
+            break
+            
         case 1:
             // Step 1: Sport Selection
             if sport.isEmpty {
@@ -152,6 +169,11 @@ class OnboardingViewModel {
             
             // Validate club fields if club toggle is ON
             if hasClubTeam {
+                if clubOrganization.isEmpty {
+                    errorMessage = "Please enter your club organization"
+                    print("[StatLocker][Onboarding] Validation failed: No club organization")
+                    return false
+                }
                 if clubTeamName.isEmpty {
                     errorMessage = "Please enter your club team name"
                     print("[StatLocker][Onboarding] Validation failed: No club team name")
@@ -201,6 +223,16 @@ class OnboardingViewModel {
     
     /// Save current progress to UserDefaults
     func saveProgress() {
+        // Convert profile image to base64 for UserDefaults persistence (use small size)
+        var profileImageData: String? = nil
+        if let image = profileImage {
+            let resizedImage = resizeImage(image: image, maxDimension: 200)
+            if let data = resizedImage.jpegData(compressionQuality: 0.3) {
+                profileImageData = data.base64EncodedString()
+                print("[StatLocker][Onboarding] Saved profile image to UserDefaults - size: \(data.count) bytes")
+            }
+        }
+        
         let progress = OnboardingProgress(
             currentStep: currentStep,
             sport: sport,
@@ -212,11 +244,13 @@ class OnboardingViewModel {
             hsCity: hsCity,
             hsState: hsState,
             hasClubTeam: hasClubTeam,
+            clubOrganization: hasClubTeam ? clubOrganization : nil,
             clubTeamName: hasClubTeam ? clubTeamName : nil,
             clubCity: hasClubTeam ? clubCity : nil,
             clubState: hasClubTeam ? clubState : nil,
             selectedGoals: selectedGoals,
             aiTone: aiTone,
+            profileImageData: profileImageData,
             lastUpdated: Date()
         )
         
@@ -232,7 +266,8 @@ class OnboardingViewModel {
     /// Load saved progress from UserDefaults
     func loadProgress() {
         guard let data = UserDefaults.standard.data(forKey: "onboarding_progress_\(userId)") else {
-            print("[StatLocker][Onboarding] No saved progress found")
+            print("[StatLocker][Onboarding] No saved progress found - will start at step 0")
+            self.currentStep = 0
             return
         }
         
@@ -250,11 +285,19 @@ class OnboardingViewModel {
             self.hsCity = progress.hsCity
             self.hsState = progress.hsState
             self.hasClubTeam = progress.hasClubTeam
+            self.clubOrganization = progress.clubOrganization ?? ""
             self.clubTeamName = progress.clubTeamName ?? ""
             self.clubCity = progress.clubCity ?? ""
             self.clubState = progress.clubState ?? ""
             self.selectedGoals = progress.selectedGoals
             self.aiTone = progress.aiTone
+            
+            // Restore profile image from base64 if present
+            if let imageData = progress.profileImageData,
+               let data = Data(base64Encoded: imageData),
+               let image = UIImage(data: data) {
+                self.profileImage = image
+            }
             
             print("[StatLocker][Onboarding] Progress loaded: resuming at step \(currentStep)")
         } catch {
@@ -340,8 +383,43 @@ class OnboardingViewModel {
         errorMessage = nil
         
         do {
+            // Convert profile picture to base64 for Firestore storage (avoids needing Firebase Storage)
+            var profilePictureData: String? = nil
+            if let image = profileImage {
+                print("[StatLocker][Onboarding] Processing profile picture for Firestore")
+                
+                // Resize image to reasonable dimensions (400x400 max) to reduce file size
+                let resizedImage = resizeImage(image: image, maxDimension: 400)
+                
+                // Compress with low quality since it's just a profile picture
+                if let imageData = resizedImage.jpegData(compressionQuality: 0.3) {
+                    let base64String = imageData.base64EncodedString()
+                    let base64Size = base64String.count
+                    
+                    // Firestore limit is 1,048,487 bytes per field
+                    if base64Size < 900_000 {
+                        profilePictureData = base64String
+                        print("[StatLocker][Onboarding] ✅ Profile picture ready - size: \(imageData.count) bytes (base64: \(base64Size) bytes)")
+                    } else {
+                        // Try even more aggressive compression
+                        print("[StatLocker][Onboarding] Image still too large, compressing more")
+                        if let smallerData = resizedImage.jpegData(compressionQuality: 0.2) {
+                            let smallerBase64 = smallerData.base64EncodedString()
+                            if smallerBase64.count < 900_000 {
+                                profilePictureData = smallerBase64
+                                print("[StatLocker][Onboarding] ✅ Profile picture ready (compressed) - size: \(smallerData.count) bytes")
+                            } else {
+                                print("[StatLocker][Onboarding] ⚠️ Image too large even after compression, skipping")
+                            }
+                        }
+                    }
+                } else {
+                    print("[StatLocker][Onboarding] Error: Could not compress image")
+                }
+            }
+            
             // Create profile
-            let profile = AthleteProfile(
+            var profile = AthleteProfile(
                 userId: userId,
                 firstName: firstName,
                 lastName: lastName,
@@ -356,6 +434,7 @@ class OnboardingViewModel {
                 onboardingCompleted: true,
                 createdAt: Date()
             )
+            profile.profilePictureData = profilePictureData
             
             // Create team info
             let teamInfo = TeamInfo(
@@ -363,6 +442,7 @@ class OnboardingViewModel {
                 hsCity: hsCity,
                 hsState: hsState,
                 hasClubTeam: hasClubTeam,
+                clubOrganization: hasClubTeam ? clubOrganization : nil,
                 clubTeamName: hasClubTeam ? clubTeamName : nil,
                 clubCity: hasClubTeam ? clubCity : nil,
                 clubState: hasClubTeam ? clubState : nil
@@ -372,14 +452,18 @@ class OnboardingViewModel {
             let db = Firestore.firestore()
             
             // Save profile
+            print("[StatLocker][Onboarding] Encoding profile data...")
             let profileData = try Firestore.Encoder().encode(profile)
+            print("[StatLocker][Onboarding] Saving profile to Firebase for user: \(userId)")
             try await db.collection("users").document(userId).collection("profile").document("data").setData(profileData)
-            print("[StatLocker][Onboarding] Profile saved to Firebase for user: \(userId)")
+            print("[StatLocker][Onboarding] ✅ Profile saved to Firebase successfully")
             
             // Save team info
+            print("[StatLocker][Onboarding] Encoding team data...")
             let teamData = try Firestore.Encoder().encode(teamInfo)
+            print("[StatLocker][Onboarding] Saving team info to Firebase for user: \(userId)")
             try await db.collection("users").document(userId).collection("team").document("data").setData(teamData)
-            print("[StatLocker][Onboarding] Team info saved to Firebase for user: \(userId)")
+            print("[StatLocker][Onboarding] ✅ Team info saved to Firebase successfully")
             
             // Clear UserDefaults progress
             clearProgress()
@@ -390,9 +474,36 @@ class OnboardingViewModel {
             
         } catch {
             isLoading = false
-            errorMessage = "Failed to save profile. Please try again."
-            print("[StatLocker][Onboarding] Error saving to Firebase: \(error.localizedDescription)")
+            let errorDetails = "\(error.localizedDescription) - Domain: \((error as NSError).domain) - Code: \((error as NSError).code)"
+            errorMessage = "Failed to save profile. Please check your internet connection and try again."
+            print("[StatLocker][Onboarding] ❌ Error saving to Firebase: \(errorDetails)")
+            print("[StatLocker][Onboarding] ❌ Full error: \(error)")
             throw error
+        }
+    }
+    
+    // MARK: - Image Processing Helper
+    
+    /// Resize image to fit within max dimension while maintaining aspect ratio
+    private func resizeImage(image: UIImage, maxDimension: CGFloat) -> UIImage {
+        let size = image.size
+        let aspectRatio = size.width / size.height
+        
+        var newSize: CGSize
+        if size.width > size.height {
+            newSize = CGSize(width: maxDimension, height: maxDimension / aspectRatio)
+        } else {
+            newSize = CGSize(width: maxDimension * aspectRatio, height: maxDimension)
+        }
+        
+        // Don't upscale if image is already smaller
+        if size.width <= maxDimension && size.height <= maxDimension {
+            return image
+        }
+        
+        let renderer = UIGraphicsImageRenderer(size: newSize)
+        return renderer.image { _ in
+            image.draw(in: CGRect(origin: .zero, size: newSize))
         }
     }
     
@@ -401,6 +512,8 @@ class OnboardingViewModel {
     /// Log step completion with context
     func logStepCompletion() {
         switch currentStep {
+        case 0:
+            print("[StatLocker][Onboarding] Step 0 completed: profileImage=\(profileImage != nil ? "set" : "skipped")")
         case 1:
             print("[StatLocker][Onboarding] Step 1 completed: sport=\(sport)")
         case 2:
@@ -438,11 +551,13 @@ extension OnboardingProgress {
          hsCity: String,
          hsState: String,
          hasClubTeam: Bool,
+         clubOrganization: String?,
          clubTeamName: String?,
          clubCity: String?,
          clubState: String?,
          selectedGoals: [SeasonGoal],
          aiTone: String,
+         profileImageData: String?,
          lastUpdated: Date) {
         
         self.currentStep = currentStep
@@ -455,11 +570,13 @@ extension OnboardingProgress {
         self.hsCity = hsCity
         self.hsState = hsState
         self.hasClubTeam = hasClubTeam
+        self.clubOrganization = clubOrganization
         self.clubTeamName = clubTeamName
         self.clubCity = clubCity
         self.clubState = clubState
         self.selectedGoals = selectedGoals
         self.aiTone = aiTone
+        self.profileImageData = profileImageData
         self.lastUpdated = lastUpdated
     }
 }

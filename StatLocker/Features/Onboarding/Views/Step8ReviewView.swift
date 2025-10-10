@@ -14,125 +14,132 @@ struct Step8ReviewView: View {
     var onEdit: (Int) -> Void // Callback to jump to specific step
     
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 0) {
+        VStack(spacing: Theme.Spacing.xl) {
+            Spacer()
+            
+            // MARK: - Header
+            VStack(spacing: Theme.Spacing.md) {
+                Text("You're all set!")
+                    .font(Theme.Typography.headline(28))
+                    .foregroundStyle(Theme.Colors.textPrimary)
+                    .multilineTextAlignment(.center)
+                    .accessibilityAddTraits(.isHeader)
                 
-                // MARK: - Header
-                
-                VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
-                    Text("You're locked in, \(viewModel.displayName)")
-                        .font(Theme.Typography.headline(32))
-                        .foregroundStyle(Theme.Colors.textPrimary)
-                        .accessibilityAddTraits(.isHeader)
-                    
-                    Text("Your first game log is one tap away—let's go.")
-                        .font(Theme.Typography.subhead(17))
-                        .foregroundStyle(Theme.Colors.textSecondary)
-                        .fixedSize(horizontal: false, vertical: true)
-                }
-                .padding(.horizontal, Theme.Spacing.xl)
-                .padding(.top, Theme.Spacing.xxl)
-                .padding(.bottom, Theme.Spacing.xl)
-                
-                // MARK: - Summary Sections
-                
-                VStack(spacing: Theme.Spacing.md) {
-                    
-                    // Name & Position
-                    ReviewSection(title: "Profile") {
-                        VStack(alignment: .leading, spacing: Theme.Spacing.xs) {
-                            Text("\(viewModel.firstName) \(viewModel.lastName)")
-                                .font(Theme.Typography.body(17))
-                                .fontWeight(.semibold)
-                                .foregroundStyle(Theme.Colors.textPrimary)
+                Text("Review your setup and start tracking your first game")
+                    .font(Theme.Typography.body(16))
+                    .foregroundStyle(Theme.Colors.textSecondary)
+                    .multilineTextAlignment(.center)
+            }
+            
+            // MARK: - Summary Sections
+            VStack(spacing: Theme.Spacing.lg) {
+                // Profile Summary
+                ReviewSummaryCard(
+                    title: "Profile",
+                    icon: "person.fill",
+                    content: {
+                        HStack(spacing: Theme.Spacing.md) {
+                            // Profile Picture Preview
+                            if let image = viewModel.profileImage {
+                                Image(uiImage: image)
+                                    .resizable()
+                                    .scaledToFill()
+                                    .frame(width: 50, height: 50)
+                                    .clipShape(Circle())
+                            } else {
+                                Circle()
+                                    .fill(Theme.Colors.backgroundSecondary)
+                                    .frame(width: 50, height: 50)
+                                    .overlay(
+                                        Text(viewModel.displayName.prefix(1))
+                                            .font(.system(size: 20, weight: .semibold))
+                                            .foregroundStyle(Theme.Colors.primary)
+                                    )
+                            }
                             
-                            Text("\(viewModel.position) | Class of \(viewModel.gradYear)")
-                                .font(Theme.Typography.body(15))
-                                .foregroundStyle(Theme.Colors.textSecondary)
+                            VStack(alignment: .leading, spacing: Theme.Spacing.xs) {
+                                Text(viewModel.displayName)
+                                    .font(Theme.Typography.body(16))
+                                    .fontWeight(.semibold)
+                                    .foregroundStyle(Theme.Colors.textPrimary)
+                                
+                                Text("\(viewModel.position) | Class of \(String(viewModel.gradYear))")
+                                    .font(Theme.Typography.caption(14))
+                                    .foregroundStyle(Theme.Colors.textSecondary)
+                            }
                             
-                            Text("Level: \(viewModel.level)")
-                                .font(Theme.Typography.body(15))
-                                .foregroundStyle(Theme.Colors.textSecondary)
+                            Spacer()
                         }
-                    } editAction: {
-                        onEdit(3) // Go to profile details step
-                    }
-                    
-                    // High School Team
-                    ReviewSection(title: "High School Team") {
+                    },
+                    onEdit: { onEdit(0) }
+                )
+                
+                // Team Summary
+                ReviewSummaryCard(
+                    title: "Team",
+                    icon: "sportscourt.fill",
+                    content: {
                         VStack(alignment: .leading, spacing: Theme.Spacing.xs) {
                             Text(viewModel.hsTeamName)
-                                .font(Theme.Typography.body(17))
+                                .font(Theme.Typography.body(16))
                                 .fontWeight(.semibold)
                                 .foregroundStyle(Theme.Colors.textPrimary)
                             
                             Text("\(viewModel.hsCity), \(viewModel.hsState)")
-                                .font(Theme.Typography.body(15))
+                                .font(Theme.Typography.caption(14))
                                 .foregroundStyle(Theme.Colors.textSecondary)
                         }
-                    } editAction: {
-                        onEdit(5) // Go to team info step
-                    }
-                    
-                    // Club Team (if applicable)
-                    if viewModel.hasClubTeam {
-                        ReviewSection(title: "Club Team") {
-                            VStack(alignment: .leading, spacing: Theme.Spacing.xs) {
-                                Text(viewModel.clubTeamName)
-                                    .font(Theme.Typography.body(17))
-                                    .fontWeight(.semibold)
-                                    .foregroundStyle(Theme.Colors.textPrimary)
-                                
-                                Text("\(viewModel.clubCity), \(viewModel.clubState)")
-                                    .font(Theme.Typography.body(15))
-                                    .foregroundStyle(Theme.Colors.textSecondary)
-                            }
-                        } editAction: {
-                            onEdit(5) // Go to team info step
-                        }
-                    }
-                    
-                    // Season Goals
-                    ReviewSection(title: "Season Goals") {
-                        VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
+                    },
+                    onEdit: { onEdit(5) }
+                )
+                
+                // Season Goals Summary
+                ReviewSummaryCard(
+                    title: "Season Goals",
+                    icon: "target",
+                    content: {
+                        VStack(alignment: .leading, spacing: Theme.Spacing.xs) {
                             ForEach(Array(viewModel.selectedGoals.enumerated()), id: \.element.id) { index, goal in
                                 HStack(alignment: .top, spacing: Theme.Spacing.xs) {
                                     Text("\(index + 1).")
-                                        .font(Theme.Typography.body(15))
+                                        .font(Theme.Typography.caption(12))
                                         .foregroundStyle(Theme.Colors.textSecondary)
                                     
                                     Text(goal.title)
-                                        .font(Theme.Typography.body(15))
+                                        .font(Theme.Typography.caption(12))
                                         .foregroundStyle(Theme.Colors.textPrimary)
-                                        .fixedSize(horizontal: false, vertical: true)
+                                        .lineLimit(1)
                                 }
                             }
                         }
-                    } editAction: {
-                        onEdit(6) // Go to goals step
-                    }
-                    
-                    // AI Coach Tone
-                    ReviewSection(title: "AI Coach Tone") {
+                    },
+                    onEdit: { onEdit(6) }
+                )
+                
+                // AI Coach Tone Summary
+                ReviewSummaryCard(
+                    title: "AI Coach",
+                    icon: "brain.head.profile",
+                    content: {
                         HStack(spacing: Theme.Spacing.sm) {
                             Text(getToneEmoji(viewModel.aiTone))
-                                .font(.system(size: 24))
+                                .font(.system(size: 20))
                             
                             Text(viewModel.aiTone)
-                                .font(Theme.Typography.body(17))
+                                .font(Theme.Typography.body(16))
                                 .fontWeight(.semibold)
                                 .foregroundStyle(Theme.Colors.textPrimary)
                         }
-                    } editAction: {
-                        onEdit(7) // Go to tone step
-                    }
-                }
-                .padding(.horizontal, Theme.Spacing.xl)
-                
-                Spacer()
-                    .frame(height: Theme.Spacing.xl)
+                    },
+                    onEdit: { onEdit(7) }
+                )
             }
+            .padding(.horizontal, Theme.Spacing.xl)
+            
+            Spacer()
         }
+        .padding(Theme.Spacing.xl)
+        .background(Theme.Colors.backgroundPrimary)
     }
     
     // MARK: - Helpers
@@ -148,28 +155,34 @@ struct Step8ReviewView: View {
     }
 }
 
-// MARK: - Review Section Component
+// MARK: - Review Summary Card Component
 
-struct ReviewSection<Content: View>: View {
+struct ReviewSummaryCard<Content: View>: View {
     let title: String
+    let icon: String
     @ViewBuilder let content: Content
-    let editAction: () -> Void
+    let onEdit: () -> Void
     
     var body: some View {
         VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
-            
             // Section Header
             HStack {
-                Text(title)
-                    .font(Theme.Typography.caption(13))
-                    .fontWeight(.medium)
-                    .foregroundStyle(Theme.Colors.muted)
-                    .textCase(.uppercase)
+                HStack(spacing: Theme.Spacing.sm) {
+                    Image(systemName: icon)
+                        .font(.system(size: 16))
+                        .foregroundStyle(Theme.Colors.primary)
+                    
+                    Text(title)
+                        .font(Theme.Typography.caption(13))
+                        .fontWeight(.medium)
+                        .foregroundStyle(Theme.Colors.textSecondary)
+                        .textCase(.uppercase)
+                }
                 
                 Spacer()
                 
                 Button {
-                    editAction()
+                    onEdit()
                     print("[StatLocker][Onboarding] Edit tapped for: \(title)")
                 } label: {
                     Text("Edit")
@@ -184,14 +197,12 @@ struct ReviewSection<Content: View>: View {
             content
                 .padding(Theme.Spacing.md)
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .background(
-                    RoundedRectangle(cornerRadius: 12, style: .continuous)
-                        .fill(Theme.Colors.cardSurface)
-                )
+                .background(Theme.Colors.backgroundSecondary)
                 .overlay(
-                    RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    RoundedRectangle(cornerRadius: 12)
                         .stroke(Theme.Colors.divider, lineWidth: 1)
                 )
+                .clipShape(RoundedRectangle(cornerRadius: 12))
         }
     }
 }
@@ -209,7 +220,8 @@ struct ReviewSection<Content: View>: View {
     vm.hsCity = "Duxbury"
     vm.hsState = "MA"
     vm.hasClubTeam = true
-    vm.clubTeamName = "Boston Lacrosse Club"
+    vm.clubOrganization = "Boston Lacrosse Club"
+    vm.clubTeamName = "U17 Elite"
     vm.clubCity = "Boston"
     vm.clubState = "MA"
     vm.selectedGoals = [
@@ -222,6 +234,6 @@ struct ReviewSection<Content: View>: View {
     return Step8ReviewView(viewModel: vm) { step in
         print("Navigate to step \(step)")
     }
-    .background(Theme.Colors.background)
 }
+
 

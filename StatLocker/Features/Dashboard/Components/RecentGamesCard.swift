@@ -13,37 +13,66 @@ struct RecentGamesCard: View {
     var onSeeAll: () -> Void
     
     var body: some View {
-        VStack(alignment: .leading, spacing: Theme.Spacing.md) {
-            HStack {
-                Label("Recent Games", systemImage: "gamecontroller.fill")
+        VStack(alignment: .leading, spacing: Theme.Spacing.lg) {
+            // Header
+            HStack(spacing: Theme.Spacing.sm) {
+                Image(systemName: "gamecontroller.fill")
+                    .font(.system(size: 16))
+                    .foregroundStyle(Theme.Colors.primary)
+                
+                Text("Recent Games")
                     .font(Theme.Typography.title(18))
+                    .fontWeight(.semibold)
                     .foregroundStyle(Theme.Colors.textPrimary)
                 
                 Spacer()
                 
-                Button("See All", action: onSeeAll)
-                    .font(Theme.Typography.title(14))
-                    .foregroundStyle(Theme.Colors.primary)
-                    .accessibilityLabel("View all games in Stats tab")
+                Button {
+                    onSeeAll()
+                    print("[StatLocker][Dashboard] See All games tapped")
+                } label: {
+                    Text("See All")
+                        .font(Theme.Typography.body(14))
+                        .fontWeight(.medium)
+                        .foregroundStyle(Theme.Colors.primary)
+                }
+                .accessibilityLabel("View all games in Stats tab")
             }
             
+            // Games list or empty state
             if games.isEmpty {
-                EmptyStateCard(
-                    icon: "gamecontroller",
-                    message: "Your game history will appear here"
-                )
+                VStack(spacing: Theme.Spacing.md) {
+                    Image(systemName: "gamecontroller")
+                        .font(.system(size: 40))
+                        .foregroundStyle(Theme.Colors.textTertiary)
+                    
+                    Text("Your game history will appear here")
+                        .font(Theme.Typography.body(15))
+                        .foregroundStyle(Theme.Colors.textSecondary)
+                    
+                    Text("Log your first game to get started")
+                        .font(Theme.Typography.caption(13))
+                        .foregroundStyle(Theme.Colors.textTertiary)
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, Theme.Spacing.xl)
             } else {
-                VStack(spacing: Theme.Spacing.sm) {
+                VStack(spacing: Theme.Spacing.md) {
                     ForEach(games.prefix(2)) { game in
                         GameCard(game: game)
                     }
                 }
             }
         }
-        .padding(Theme.Spacing.md)
-        .background(Theme.Colors.cardSurface)
-        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-        .themedShadow(Theme.Shadows.card)
+        .padding(Theme.Spacing.lg)
+        .background(
+            RoundedRectangle(cornerRadius: 20)
+                .fill(Theme.Colors.backgroundSecondary)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 20)
+                .stroke(Theme.Colors.divider, lineWidth: 1)
+        )
         .accessibilityElement(children: .combine)
         .accessibilityLabel("Recent games section")
     }
@@ -54,34 +83,57 @@ struct GameCard: View {
     @State private var showDetail = false
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            HStack {
+        VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
+            // Game header with opponent and result
+            HStack(spacing: Theme.Spacing.sm) {
                 Text("vs \(game.opponent ?? "Unknown")")
-                    .font(Theme.Typography.title(16))
-                Text("•")
-                    .foregroundStyle(Theme.Colors.textSecondary)
+                    .font(Theme.Typography.body(16))
+                    .fontWeight(.semibold)
+                    .foregroundStyle(Theme.Colors.textPrimary)
+                
+                Spacer()
+                
+                // Win/Loss indicator
                 Text(game.result)
-                    .foregroundStyle(game.isWin ? Theme.Colors.success : Theme.Colors.error)
+                    .font(Theme.Typography.body(14))
+                    .fontWeight(.bold)
+                    .foregroundStyle(.white)
+                    .padding(.horizontal, Theme.Spacing.sm)
+                    .padding(.vertical, 4)
+                    .background(
+                        RoundedRectangle(cornerRadius: 8)
+                            .fill(game.isWin ? Theme.Colors.accentEmerald : Theme.Colors.error)
+                    )
             }
-            .font(Theme.Typography.title(16))
             
+            // Game details
             Text(game.formattedDate + " • " + game.contextLabel)
+                .font(Theme.Typography.caption(13))
+                .foregroundStyle(Theme.Colors.textTertiary)
+            
+            // Key stats
+            Text(game.keyStats)
                 .font(Theme.Typography.body(14))
                 .foregroundStyle(Theme.Colors.textSecondary)
             
-            Text(game.keyStats)
-                .font(Theme.Typography.body(14))
-                .foregroundStyle(Theme.Colors.textPrimary)
-            
-            Button(action: { showDetail = true }) {
-                Text("→ Tap to see AI summary")
-                    .font(Theme.Typography.caption(13))
+            // AI summary CTA
+            HStack(spacing: Theme.Spacing.xs) {
+                Image(systemName: "sparkles")
+                    .font(.system(size: 12))
+                    .foregroundStyle(Theme.Colors.primary)
+                
+                Text("Tap to see AI summary")
+                    .font(Theme.Typography.caption(12))
                     .foregroundStyle(Theme.Colors.primary)
             }
         }
-        .padding(Theme.Spacing.sm)
+        .padding(Theme.Spacing.md)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Theme.Colors.background)
+        .background(Theme.Colors.backgroundTertiary)
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(Theme.Colors.divider.opacity(0.5), lineWidth: 1)
+        )
         .clipShape(RoundedRectangle(cornerRadius: 12))
         .onTapGesture {
             showDetail = true
@@ -194,5 +246,5 @@ struct GameDetailView: View {
         print("See All tapped")
     }
     .padding()
-    .background(Theme.Colors.background)
+    .background(Theme.Colors.backgroundPrimary)
 }

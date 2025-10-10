@@ -13,6 +13,7 @@
 		9620F00F2E95A1020087F63A /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; productRef = 9620F00E2E95A1020087F63A /* GoogleSignIn */; };
 		9620F0112E95A1020087F63A /* GoogleSignInSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 9620F0102E95A1020087F63A /* GoogleSignInSwift */; };
 		965DBE0B2E96ACA7007A3F12 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = 965DBE0A2E96ACA7007A3F12 /* FirebaseFirestore */; };
+		9672D3522E98377600792361 /* FirebaseStorage in Frameworks */ = {isa = PBXBuildFile; productRef = 9672D3512E98377600792361 /* FirebaseStorage */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -49,6 +50,7 @@
 				9620F0042E9597D20087F63A /* FirebaseAnalytics in Frameworks */,
 				9620F00F2E95A1020087F63A /* GoogleSignIn in Frameworks */,
 				9620F0082E9597D20087F63A /* FirebaseCore in Frameworks */,
+				9672D3522E98377600792361 /* FirebaseStorage in Frameworks */,
 				9620F0062E9597D20087F63A /* FirebaseAuth in Frameworks */,
 				965DBE0B2E96ACA7007A3F12 /* FirebaseFirestore in Frameworks */,
 			);
@@ -107,6 +109,7 @@
 				9620F00E2E95A1020087F63A /* GoogleSignIn */,
 				9620F0102E95A1020087F63A /* GoogleSignInSwift */,
 				965DBE0A2E96ACA7007A3F12 /* FirebaseFirestore */,
+				9672D3512E98377600792361 /* FirebaseStorage */,
 			);
 			productName = StatLocker;
 			productReference = 9620EFBE2E9429990087F63A /* StatLocker.app */;
@@ -424,6 +427,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 9620F0022E9597D20087F63A /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = FirebaseFirestore;
+		};
+		9672D3512E98377600792361 /* FirebaseStorage */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9620F0022E9597D20087F63A /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseStorage;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

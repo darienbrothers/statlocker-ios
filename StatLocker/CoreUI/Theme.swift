@@ -13,26 +13,37 @@ import Combine
 
 enum Theme {
     enum Colors {
-        // Brand
-        static let primary = Color(hex: "#4F46E5")
+        // Backgrounds - Adaptive (Dark/Light)
+        static let backgroundPrimary = Color("BackgroundPrimary")
+        static let backgroundSecondary = Color("BackgroundSecondary")
+        static let backgroundTertiary = Color("BackgroundTertiary")
+        
+        // Text - Adaptive (Dark/Light)
+        static let textPrimary = Color("TextPrimary")
+        static let textSecondary = Color("TextSecondary")
+        static let textTertiary = Color("TextTertiary")
+        
+        // Brand - Same in both themes
+        static let primary = Color("PrimaryPurple")
+        static let accentCyan = Color("AccentCyan")
+        static let accentEmerald = Color("AccentEmerald")
+        static let accentPink = Color("AccentPink")
+        static let warning = Color("Warning")
+        static let error = Color("Error")
+        
+        // Special Effects
+        static let glassBlur = Color("GlassBlur")
+        static let divider = Color("Divider")
+        
+        // Legacy aliases (for backward compatibility)
+        static let background = backgroundPrimary
+        static let cardSurface = backgroundSecondary
+        static let success = accentEmerald
+        static let muted = textTertiary
+        
+        // Deprecated - will be removed
         static let primaryPressed = Color(hex: "#4338CA")
-        static let accentEmerald = Color(hex: "#1AEC88")
         static let accentTeal = Color(hex: "#0BF8CB")
-
-        // Text
-        static let textPrimary = Color(hex: "#0F172A")
-        static let textSecondary = Color(hex: "#334155")
-
-        // Surfaces
-        static let background = Color.white
-        static let cardSurface = Color(hex: "#F8FAFC")
-        static let divider = Color(hex: "#E2E8F0")
-
-        // Status
-        static let success = Color(hex: "#22C55E")
-        static let warning = Color(hex: "#F59E0B")
-        static let error = Color(hex: "#EF4444")
-        static let muted = Color(hex: "#A3A3A3")
     }
 
     enum Spacing {
@@ -53,6 +64,14 @@ enum Theme {
         static func subhead(_ size: CGFloat = 17) -> Font { .system(size: size, weight: .regular, design: .default) }
         static func number(_ size: CGFloat = 28, weight: Font.Weight = .semibold) -> Font { .system(size: size, weight: weight, design: .rounded) }
         static func caption(_ size: CGFloat = 13) -> Font { .system(size: size, weight: .medium, design: .default) }
+    }
+
+    enum Gradients {
+        static let primaryPurple = LinearGradient(
+            colors: [Color(hex: "#7C3AED"), Color(hex: "#8B5CF6")],
+            startPoint: .topLeading,
+            endPoint: .bottomTrailing
+        )
     }
 
     enum Shadows {

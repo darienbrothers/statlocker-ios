@@ -22,52 +22,62 @@ struct HeroCard: View {
     }
     
     var body: some View {
-        VStack(spacing: Theme.Spacing.md) {
+        VStack(spacing: Theme.Spacing.lg) {
             HStack(spacing: Theme.Spacing.md) {
                 // Profile Picture
-                Circle()
-                    .fill(Theme.Colors.cardSurface)
-                    .frame(width: 40, height: 40)
-                    .overlay(
-                        Text(profile.firstName.prefix(1))
-                            .font(Theme.Typography.title(18))
-                            .foregroundStyle(Theme.Colors.primary)
-                    )
-                    .onTapGesture {
-                        // TODO: Open Profile in drawer
-                        print("[StatLocker][Dashboard] Profile picture tapped")
-                    }
+                ProfileImageView(
+                    imageData: profile.profilePictureData,
+                    initials: String(profile.firstName.prefix(1)),
+                    size: 56
+                )
+                .onTapGesture {
+                    // TODO: Open Profile in drawer
+                    print("[StatLocker][Dashboard] Profile picture tapped")
+                }
+                .accessibilityLabel("Profile picture")
                 
-                VStack(alignment: .leading, spacing: 4) {
+                VStack(alignment: .leading, spacing: Theme.Spacing.xs) {
                     Text(profile.fullName)
-                        .font(Theme.Typography.title(18))
+                        .font(Theme.Typography.title(20))
+                        .fontWeight(.bold)
                         .foregroundStyle(Theme.Colors.textPrimary)
                     
                     Text(teamName)
                         .font(Theme.Typography.body(15))
                         .foregroundStyle(Theme.Colors.textSecondary)
                     
-                    Text("\(location) • \(profile.level)")
-                        .font(Theme.Typography.caption(13))
-                        .foregroundStyle(Theme.Colors.textSecondary)
+                    HStack(spacing: Theme.Spacing.xs) {
+                        Image(systemName: "mappin.circle.fill")
+                            .font(.system(size: 12))
+                            .foregroundStyle(Theme.Colors.textTertiary)
+                        
+                        Text("\(location) • \(profile.level)")
+                            .font(Theme.Typography.caption(13))
+                            .foregroundStyle(Theme.Colors.textTertiary)
+                    }
                 }
                 
                 Spacer()
             }
             
-            // Context Toggle
+            // Context Toggle with gradient highlight
             Picker("Context", selection: $selectedContext) {
-                Text("HS").tag(GameContext.hs)
+                Text("High School").tag(GameContext.hs)
                 Text("Club").tag(GameContext.club)
             }
             .pickerStyle(.segmented)
             .frame(height: 44)
             .accessibilityLabel("Select team context")
         }
-        .padding(Theme.Spacing.md)
-        .background(Theme.Colors.cardSurface)
-        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-        .themedShadow(Theme.Shadows.card)
+        .padding(Theme.Spacing.lg)
+        .background(
+            RoundedRectangle(cornerRadius: 20)
+                .fill(Theme.Colors.backgroundSecondary)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 20)
+                .stroke(Theme.Colors.divider, lineWidth: 1)
+        )
     }
 }
 
@@ -105,5 +115,5 @@ struct HeroCard: View {
         selectedContext: $selectedContext
     )
     .padding()
-    .background(Theme.Colors.background)
+    .background(Theme.Colors.backgroundPrimary)
 }

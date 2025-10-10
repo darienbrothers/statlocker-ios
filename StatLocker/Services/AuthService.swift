@@ -22,7 +22,7 @@ protocol AuthServiceProtocol {
     func signInWithApple() async throws -> User
     func signInWithGoogle() async throws -> User
     func signInWithEmail(email: String, password: String) async throws -> User
-    func signUpWithEmail(email: String, password: String) async throws -> User
+    func signUpWithEmail(email: String, password: String, firstName: String?, lastName: String?) async throws -> User
     func signOut() async throws
     func resetPassword(email: String) async throws
 }
@@ -116,10 +116,20 @@ class AuthService: AuthServiceProtocol {
         return result.user
     }
     
-    func signUpWithEmail(email: String, password: String) async throws -> User {
+    func signUpWithEmail(email: String, password: String, firstName: String? = nil, lastName: String? = nil) async throws -> User {
         print("[StatLocker][Auth] Starting Email Sign Up")
         
         let result = try await auth.createUser(withEmail: email, password: password)
+        
+        // Update user profile with display name if provided
+        if let firstName = firstName, let lastName = lastName {
+            let displayName = "\(firstName) \(lastName)"
+            let changeRequest = result.user.createProfileChangeRequest()
+            changeRequest.displayName = displayName
+            try await changeRequest.commitChanges()
+            print("[StatLocker][Auth] Updated user profile with displayName: \(displayName)")
+        }
+        
         print("[StatLocker][Auth] Email Sign Up successful")
         
         return result.user
@@ -248,7 +258,7 @@ class MockAuthService: AuthServiceProtocol {
         throw AuthError.networkError
     }
     
-    func signUpWithEmail(email: String, password: String) async throws -> User {
+    func signUpWithEmail(email: String, password: String, firstName: String? = nil, lastName: String? = nil) async throws -> User {
         print("[StatLocker][Auth] Mock Email Sign Up")
         throw AuthError.networkError
     }

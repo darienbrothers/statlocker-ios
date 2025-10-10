@@ -20,12 +20,21 @@ class OnboardingCoordinator {
     var viewModel: OnboardingViewModel
     var isCompleted: Bool = false
     var showError: Bool = false
+    var isEditMode: Bool = false // Track if we're editing from review screen
     
     // MARK: - Initialization
     
     init(userId: String, displayName: String?, email: String?) {
         self.viewModel = OnboardingViewModel(userId: userId, displayName: displayName, email: email)
         self.currentStep = viewModel.currentStep
+        
+        // Ensure we start at step 0 for new users
+        if currentStep != 0 && viewModel.sport.isEmpty {
+            print("[StatLocker][Onboarding] Detected incomplete saved progress, resetting to step 0")
+            currentStep = 0
+            viewModel.currentStep = 0
+        }
+        
         print("[StatLocker][Onboarding] Coordinator initialized at step \(currentStep)")
     }
     
@@ -51,13 +60,22 @@ class OnboardingCoordinator {
         // Save progress
         viewModel.saveProgress()
         
+        // If in edit mode, return to review screen (step 9)
+        if isEditMode && currentStep != 9 {
+            print("[StatLocker][Onboarding] Edit mode: returning to review screen")
+            currentStep = 9
+            viewModel.currentStep = 9
+            isEditMode = false
+            return
+        }
+        
         // Move to next step or complete
         if currentStep < 8 {
             currentStep += 1
             viewModel.currentStep = currentStep
             print("[StatLocker][Onboarding] Advanced to step \(currentStep)")
         } else {
-            // Step 8 complete - finalize onboarding
+            // Step 8 (review) complete - finalize onboarding
             Task {
                 await completeOnboarding()
             }
@@ -66,7 +84,7 @@ class OnboardingCoordinator {
     
     /// Move to previous step
     func previousStep() {
-        guard currentStep > 1 else {
+        guard currentStep > 0 else {
             print("[StatLocker][Onboarding] Already at first step")
             return
         }
@@ -82,9 +100,15 @@ class OnboardingCoordinator {
     
     /// Jump to specific step (for Edit from Review)
     func goToStep(_ step: Int) {
-        guard step >= 1 && step <= 8 else {
+        guard step >= 0 && step <= 8 else {
             print("[StatLocker][Onboarding] Invalid step number: \(step)")
             return
+        }
+        
+        // Enable edit mode when navigating from review screen
+        if currentStep == 8 && step != 8 {
+            isEditMode = true
+            print("[StatLocker][Onboarding] Entering edit mode from review screen")
         }
         
         currentStep = step
@@ -113,17 +137,17 @@ class OnboardingCoordinator {
     
     /// Progress as a fraction (for progress bar)
     var progressFraction: Double {
-        Double(currentStep) / 8.0
+        Double(currentStep) / 9.0
     }
     
     /// Progress label for display
     var progressLabel: String {
-        "Step \(currentStep) of 8"
+        "Step \(currentStep + 1) of 9"
     }
     
     /// Check if on first step
     var isFirstStep: Bool {
-        currentStep == 1
+        currentStep == 0
     }
     
     /// Check if on last step

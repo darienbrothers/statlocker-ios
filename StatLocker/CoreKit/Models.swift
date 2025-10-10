@@ -36,7 +36,7 @@ struct AthleteProfile: Codable, Identifiable, Equatable {
     
     /// Computed class year display
     var classYear: String {
-        "Class of \(gradYear)"
+        "Class of \(String(gradYear))"
     }
     
     // MARK: - B-004 Dashboard Extensions
@@ -45,8 +45,8 @@ struct AthleteProfile: Codable, Identifiable, Equatable {
     var hsJerseyNumber: Int?
     var clubJerseyNumber: Int?
     
-    /// Profile picture (Phase 1)
-    var profilePictureURL: String?
+    /// Profile picture stored as base64 (avoids Firebase Storage requirement)
+    var profilePictureData: String?
 }
 
 // MARK: - Season Goal
@@ -118,7 +118,8 @@ struct TeamInfo: Codable, Equatable {
     var hsCity: String
     var hsState: String
     var hasClubTeam: Bool
-    var clubTeamName: String?
+    var clubOrganization: String? // e.g., "Boston Lacrosse Club"
+    var clubTeamName: String? // e.g., "U17 Elite"
     var clubCity: String?
     var clubState: String?
     
@@ -131,6 +132,12 @@ struct TeamInfo: Codable, Equatable {
     var clubLocation: String? {
         guard let city = clubCity, let state = clubState else { return nil }
         return "\(city), \(state)"
+    }
+    
+    /// Full club team name with organization
+    var fullClubName: String? {
+        guard let org = clubOrganization, let team = clubTeamName else { return nil }
+        return "\(org) - \(team)"
     }
 }
 
@@ -150,15 +157,17 @@ struct OnboardingProgress: Codable {
     var hsCity: String
     var hsState: String
     var hasClubTeam: Bool
+    var clubOrganization: String?
     var clubTeamName: String?
     var clubCity: String?
     var clubState: String?
     var selectedGoals: [SeasonGoal]
     var aiTone: String
+    var profileImageData: String? // base64 encoded image data for persistence
     var lastUpdated: Date
     
     init() {
-        self.currentStep = 1
+        self.currentStep = 0
         self.sport = ""
         self.teamGender = ""
         self.gradYear = 2025
@@ -168,8 +177,10 @@ struct OnboardingProgress: Codable {
         self.hsCity = ""
         self.hsState = ""
         self.hasClubTeam = false
+        self.clubOrganization = nil
         self.selectedGoals = []
         self.aiTone = ""
+        self.profileImageData = nil
         self.lastUpdated = Date()
     }
 }

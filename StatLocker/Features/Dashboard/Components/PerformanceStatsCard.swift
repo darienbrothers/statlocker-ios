@@ -14,13 +14,29 @@ struct PerformanceStatsCard: View {
     let context: GameContext
     
     var body: some View {
-        VStack(alignment: .leading, spacing: Theme.Spacing.md) {
-            HStack {
-                Label("Performance Stats (\(context == .hs ? "HS" : "Club"))", systemImage: "chart.bar.fill")
+        VStack(alignment: .leading, spacing: Theme.Spacing.lg) {
+            // Header with icon
+            HStack(spacing: Theme.Spacing.sm) {
+                Image(systemName: "chart.bar.fill")
+                    .font(.system(size: 16))
+                    .foregroundStyle(Theme.Colors.primary)
+                
+                Text("Performance Stats")
                     .font(Theme.Typography.title(18))
+                    .fontWeight(.semibold)
                     .foregroundStyle(Theme.Colors.textPrimary)
                 
                 Spacer()
+                
+                // Context Badge
+                Text(context == .hs ? "HS" : "Club")
+                    .font(Theme.Typography.caption(12))
+                    .fontWeight(.medium)
+                    .foregroundStyle(Theme.Colors.primary)
+                    .padding(.horizontal, Theme.Spacing.sm)
+                    .padding(.vertical, 4)
+                    .background(Theme.Colors.primary.opacity(0.1))
+                    .clipShape(Capsule())
             }
             
             if stats.isEmpty {
@@ -33,31 +49,39 @@ struct PerformanceStatsCard: View {
                 LazyVGrid(columns: [
                     GridItem(.flexible()),
                     GridItem(.flexible())
-                ], spacing: Theme.Spacing.sm) {
+                ], spacing: Theme.Spacing.md) {
                     ForEach(stats.prefix(4), id: \.name) { stat in
                         StatTileWithTrend(stat: stat)
                     }
                 }
                 
-                Divider()
-                    .padding(.vertical, Theme.Spacing.xs)
-                
-                // Per Game Averages
-                VStack(alignment: .leading, spacing: 4) {
+                // Per Game Averages Section
+                VStack(alignment: .leading, spacing: Theme.Spacing.xs) {
                     Text("Per Game Averages")
-                        .font(Theme.Typography.title(14))
-                        .foregroundStyle(Theme.Colors.textSecondary)
+                        .font(Theme.Typography.caption(12))
+                        .fontWeight(.medium)
+                        .foregroundStyle(Theme.Colors.textTertiary)
+                        .textCase(.uppercase)
                     
                     Text(formatPerGameStats())
-                        .font(Theme.Typography.body(13))
-                        .foregroundStyle(Theme.Colors.textPrimary)
+                        .font(Theme.Typography.body(14))
+                        .foregroundStyle(Theme.Colors.textSecondary)
                 }
+                .padding(Theme.Spacing.md)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(Theme.Colors.backgroundTertiary)
+                .clipShape(RoundedRectangle(cornerRadius: 12))
             }
         }
-        .padding(Theme.Spacing.md)
-        .background(Theme.Colors.cardSurface)
-        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-        .themedShadow(Theme.Shadows.card)
+        .padding(Theme.Spacing.lg)
+        .background(
+            RoundedRectangle(cornerRadius: 20)
+                .fill(Theme.Colors.backgroundSecondary)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 20)
+                .stroke(Theme.Colors.divider, lineWidth: 1)
+        )
         .accessibilityElement(children: .combine)
         .accessibilityLabel("Performance statistics for \(context == .hs ? "High School" : "Club")")
     }

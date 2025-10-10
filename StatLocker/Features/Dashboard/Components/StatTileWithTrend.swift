@@ -12,28 +12,34 @@ struct StatTileWithTrend: View {
     let stat: PerformanceStat
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
+        VStack(alignment: .leading, spacing: Theme.Spacing.xs) {
             Text(stat.name)
-                .font(Theme.Typography.caption())
-                .foregroundStyle(Theme.Colors.textSecondary)
+                .font(Theme.Typography.caption(12))
+                .fontWeight(.medium)
+                .foregroundStyle(Theme.Colors.textTertiary)
             
             Text(stat.formattedValue)
-                .font(Theme.Typography.number(28))
+                .font(Theme.Typography.number(24, weight: .bold))
                 .foregroundStyle(Theme.Colors.textPrimary)
             
             if let trend = stat.trend {
                 HStack(spacing: 4) {
                     Text(trend.direction.icon)
-                        .font(.system(size: 12, weight: .semibold))
+                        .font(.system(size: 10, weight: .bold))
                     Text(trend.formattedChange)
-                        .font(Theme.Typography.caption(12))
+                        .font(Theme.Typography.caption(11))
+                        .fontWeight(.medium)
                 }
                 .foregroundStyle(colorFromString(trend.direction.color))
             }
         }
-        .padding(Theme.Spacing.sm)
+        .padding(Theme.Spacing.md)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Theme.Colors.background)
+        .background(Theme.Colors.backgroundTertiary)
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(Theme.Colors.divider.opacity(0.5), lineWidth: 1)
+        )
         .clipShape(RoundedRectangle(cornerRadius: 12))
         .accessibilityElement(children: .combine)
         .accessibilityLabel("\(stat.name): \(stat.formattedValue)")
@@ -68,5 +74,5 @@ struct StatTileWithTrend: View {
     
     StatTileWithTrend(stat: sampleStat)
         .padding()
-        .background(Theme.Colors.background)
+        .background(Theme.Colors.backgroundPrimary)
 }

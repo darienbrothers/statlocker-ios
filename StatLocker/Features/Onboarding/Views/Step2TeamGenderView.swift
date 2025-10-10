@@ -13,95 +13,116 @@ struct Step2TeamGenderView: View {
     @Bindable var viewModel: OnboardingViewModel
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
+        VStack(spacing: Theme.Spacing.xl) {
+            Spacer()
             
             // MARK: - Header
-            
-            VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
-                Text("Boys or girls game, \(viewModel.displayName)?")
-                    .font(Theme.Typography.headline(32))
+            VStack(spacing: Theme.Spacing.md) {
+                Text("What team gender do you play for?")
+                    .font(Theme.Typography.headline(28))
                     .foregroundStyle(Theme.Colors.textPrimary)
+                    .multilineTextAlignment(.center)
                     .accessibilityAddTraits(.isHeader)
                 
-                Text("Your stats, benchmarks, and competition level are built different.")
-                    .font(Theme.Typography.subhead(17))
+                Text("This helps us provide accurate performance benchmarks")
+                    .font(Theme.Typography.body(16))
                     .foregroundStyle(Theme.Colors.textSecondary)
-                    .fixedSize(horizontal: false, vertical: true)
+                    .multilineTextAlignment(.center)
+            }
+            
+            // MARK: - Gender Selection Cards
+            VStack(spacing: Theme.Spacing.md) {
+                // Boys Card
+                GenderSelectionCard(
+                    title: "Boys",
+                    icon: "🏃‍♂️",
+                    description: "Men's lacrosse rules and benchmarks",
+                    isSelected: viewModel.teamGender == "boys",
+                    action: {
+                        viewModel.teamGender = "boys"
+                        print("[StatLocker][Onboarding] Selected team gender: Boys")
+                    }
+                )
+                
+                // Girls Card
+                GenderSelectionCard(
+                    title: "Girls",
+                    icon: "🏃‍♀️",
+                    description: "Women's lacrosse rules and benchmarks",
+                    isSelected: viewModel.teamGender == "girls",
+                    action: {
+                        viewModel.teamGender = "girls"
+                        print("[StatLocker][Onboarding] Selected team gender: Girls")
+                    }
+                )
             }
             .padding(.horizontal, Theme.Spacing.xl)
-            .padding(.top, Theme.Spacing.xxl)
-            .padding(.bottom, Theme.Spacing.xl)
-            
-            Spacer()
-                .frame(height: Theme.Spacing.xxl)
-            
-            // MARK: - Gender Selector
-            
-            VStack(alignment: .leading, spacing: Theme.Spacing.md) {
-                
-                // Gender Segmented Control
-                HStack(spacing: Theme.Spacing.sm) {
-                    
-                    // Boys Button
-                    GenderButton(
-                        title: "Boys",
-                        isSelected: viewModel.teamGender == "boys",
-                        action: {
-                            viewModel.teamGender = "boys"
-                            print("[StatLocker][Onboarding] Gender selected: boys")
-                        }
-                    )
-                    
-                    // Girls Button
-                    GenderButton(
-                        title: "Girls",
-                        isSelected: viewModel.teamGender == "girls",
-                        action: {
-                            viewModel.teamGender = "girls"
-                            print("[StatLocker][Onboarding] Gender selected: girls")
-                        }
-                    )
-                }
-                .padding(.horizontal, Theme.Spacing.xl)
-                
-                // Helper Text
-                Text("This helps us show the right positions and benchmarks.")
-                    .font(Theme.Typography.caption(14))
-                    .foregroundStyle(Theme.Colors.muted)
-                    .padding(.horizontal, Theme.Spacing.xl)
-                    .padding(.top, Theme.Spacing.xs)
-            }
             
             Spacer()
         }
+        .padding(Theme.Spacing.xl)
+        .background(Theme.Colors.backgroundPrimary)
     }
 }
 
-// MARK: - Gender Button Component
+// MARK: - Gender Selection Card Component
 
-struct GenderButton: View {
+struct GenderSelectionCard: View {
     let title: String
+    let icon: String
+    let description: String
     let isSelected: Bool
     let action: () -> Void
     
     var body: some View {
         Button(action: action) {
-            Text(title)
-                .font(Theme.Typography.body(17))
-                .fontWeight(isSelected ? .semibold : .regular)
-                .foregroundStyle(isSelected ? .white : Theme.Colors.textPrimary)
-                .frame(maxWidth: .infinity)
-                .frame(height: 56) // 56pt for comfortable tap target
-                .background(
-                    RoundedRectangle(cornerRadius: 12, style: .continuous)
-                        .fill(isSelected ? Theme.Colors.primary : Theme.Colors.cardSurface)
-                )
-                .overlay(
-                    RoundedRectangle(cornerRadius: 12, style: .continuous)
-                        .stroke(isSelected ? Theme.Colors.primary : Theme.Colors.divider, lineWidth: isSelected ? 2 : 1)
-                )
+            HStack(spacing: Theme.Spacing.md) {
+                // Icon
+                Text(icon)
+                    .font(.system(size: 32))
+                
+                VStack(alignment: .leading, spacing: Theme.Spacing.xs) {
+                    // Title
+                    Text(title)
+                        .font(Theme.Typography.title(20))
+                        .foregroundStyle(Theme.Colors.textPrimary)
+                        .fontWeight(isSelected ? .semibold : .medium)
+                    
+                    // Description
+                    Text(description)
+                        .font(Theme.Typography.body(14))
+                        .foregroundStyle(Theme.Colors.textSecondary)
+                }
+                
+                Spacer()
+                
+                // Selection indicator
+                if isSelected {
+                    Image(systemName: "checkmark.circle.fill")
+                        .font(.system(size: 24))
+                        .foregroundStyle(Theme.Colors.primary)
+                } else {
+                    Image(systemName: "circle")
+                        .font(.system(size: 24))
+                        .foregroundStyle(Theme.Colors.divider)
+                }
+            }
+            .padding(Theme.Spacing.lg)
+            .background(
+                RoundedRectangle(cornerRadius: 16)
+                    .fill(Theme.Colors.backgroundSecondary)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 16)
+                            .stroke(
+                                isSelected ? Theme.Colors.primary : Theme.Colors.divider,
+                                lineWidth: isSelected ? 2 : 1
+                            )
+                    )
+            )
+            .scaleEffect(isSelected ? 1.02 : 1.0)
+            .animation(.easeInOut(duration: 0.2), value: isSelected)
         }
-        .buttonStyle(.plain)
+        .buttonStyle(PlainButtonStyle())
         .accessibilityLabel("\(title) team")
         .accessibilityHint("Tap to select \(title.lowercased()) lacrosse")
         .accessibilityAddTraits(isSelected ? [.isSelected, .isButton] : .isButton)
@@ -112,14 +133,12 @@ struct GenderButton: View {
 
 #Preview("Step 2 - Not Selected") {
     Step2TeamGenderView(viewModel: OnboardingViewModel(userId: "preview", displayName: "John Doe", email: "john@example.com"))
-        .background(Theme.Colors.background)
 }
 
 #Preview("Step 2 - Boys Selected") {
     let vm = OnboardingViewModel(userId: "preview", displayName: "John Doe", email: "john@example.com")
     vm.teamGender = "boys"
     return Step2TeamGenderView(viewModel: vm)
-        .background(Theme.Colors.background)
 }
 
 

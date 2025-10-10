@@ -21,71 +21,96 @@ struct DashboardView: View {
     }
     
     var body: some View {
-        ZStack(alignment: .bottom) {
-            ScrollView {
-                VStack(spacing: Theme.Spacing.md) {
-                    // Hero Card
-                    HeroCard(
-                        profile: viewModel.profile,
-                        teamInfo: viewModel.teamInfo,
-                        selectedContext: $viewModel.selectedContext
-                    )
-                    
-                    // Empty State OR Active Content
-                    if viewModel.totalGamesLogged == 0 {
-                        emptyStateView
-                    } else {
-                        activeStateView
-                    }
+        ScrollView {
+            VStack(spacing: Theme.Spacing.lg) {
+                // Hero Card
+                HeroCard(
+                    profile: viewModel.profile,
+                    teamInfo: viewModel.teamInfo,
+                    selectedContext: $viewModel.selectedContext
+                )
+                
+                // Empty State OR Active Content
+                if viewModel.totalGamesLogged == 0 {
+                    emptyStateView
+                } else {
+                    activeStateView
                 }
-                .padding(Theme.Spacing.md)
-                .padding(.bottom, 80) // Space for FAB
             }
-            
-            // FAB
-            FABButton()
-                .padding(.bottom, Theme.Spacing.xl)
+            .padding(Theme.Spacing.lg)
+            .padding(.bottom, 100) // Space for tab bar + FAB
         }
-        .background(Theme.Colors.background)
+        .refreshable {
+            print("[StatLocker][Dashboard] Manual refresh triggered")
+            await viewModel.refresh()
+        }
+        .background(Theme.Colors.backgroundPrimary)
         .navigationBarTitleDisplayMode(.inline)
+        // Allow system preference to control theme
+        .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("GameLogSaved"))) { _ in
+            print("[StatLocker][Dashboard] Received game saved notification, refreshing...")
+            Task {
+                await viewModel.refresh()
+            }
+        }
+        .onAppear {
+            // Refresh when view appears (in case we came back from another tab)
+            Task {
+                await viewModel.refresh()
+            }
+        }
     }
     
     var emptyStateView: some View {
-        VStack(spacing: Theme.Spacing.md) {
+        VStack(spacing: Theme.Spacing.lg) {
             // Empty Locker CTA
-            VStack(spacing: Theme.Spacing.md) {
+            VStack(spacing: Theme.Spacing.lg) {
                 Image(systemName: "lock.shield.fill")
-                    .font(.system(size: 48))
-                    .foregroundStyle(Theme.Colors.muted)
+                    .font(.system(size: 56))
+                    .foregroundStyle(Theme.Colors.primary.opacity(0.6))
                 
-                Text("Your Locker is Empty")
-                    .font(Theme.Typography.headline(20))
-                    .foregroundStyle(Theme.Colors.textPrimary)
-                
-                Text("Every great season starts with one game. Let's build your story.")
-                    .font(Theme.Typography.body())
-                    .foregroundStyle(Theme.Colors.textSecondary)
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal, Theme.Spacing.lg)
+                VStack(spacing: Theme.Spacing.sm) {
+                    Text("Your Locker is Empty")
+                        .font(Theme.Typography.headline(24))
+                        .fontWeight(.bold)
+                        .foregroundStyle(Theme.Colors.textPrimary)
+                    
+                    Text("Every great season starts with one game. Let's build your story.")
+                        .font(Theme.Typography.body(16))
+                        .foregroundStyle(Theme.Colors.textSecondary)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal, Theme.Spacing.lg)
+                }
                 
                 Button(action: {
                     // Open FAB sheet
                     print("[StatLocker][Dashboard] Log Your First Game button tapped")
                 }) {
-                    Text("Log Your First Game")
-                        .font(Theme.Typography.title(17))
-                        .foregroundStyle(.white)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 50)
-                        .background(Theme.Colors.primary)
-                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                    HStack {
+                        Image(systemName: "plus.circle.fill")
+                            .font(.system(size: 18))
+                        
+                        Text("Log Your First Game")
+                            .font(Theme.Typography.body(16))
+                            .fontWeight(.semibold)
+                    }
+                    .foregroundStyle(.white)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 54)
+                    .background(Theme.Gradients.primaryPurple)
+                    .clipShape(RoundedRectangle(cornerRadius: 16))
                 }
                 .accessibilityLabel("Log your first game")
             }
             .padding(Theme.Spacing.xl)
-            .background(Theme.Colors.cardSurface)
-            .clipShape(RoundedRectangle(cornerRadius: 16))
-            .themedShadow(Theme.Shadows.card)
+            .background(
+                RoundedRectangle(cornerRadius: 24)
+                    .fill(Theme.Colors.backgroundSecondary)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 24)
+                    .stroke(Theme.Colors.divider, lineWidth: 1)
+            )
             
             // Goals at 0%
             SeasonGoalsCard(goals: viewModel.profile.seasonGoals)
@@ -106,7 +131,7 @@ struct DashboardView: View {
     }
     
     var activeStateView: some View {
-        VStack(spacing: Theme.Spacing.md) {
+        VStack(spacing: Theme.Spacing.lg) {
             // Season Goals
             SeasonGoalsCard(goals: viewModel.profile.seasonGoals)
             

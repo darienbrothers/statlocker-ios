@@ -13,52 +13,42 @@ struct Step4PositionView: View {
     @Bindable var viewModel: OnboardingViewModel
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
+        VStack(spacing: Theme.Spacing.xl) {
+            Spacer()
             
             // MARK: - Header
-            
-            VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
-                Text("Lock in your position, \(viewModel.displayName)")
-                    .font(Theme.Typography.headline(32))
+            VStack(spacing: Theme.Spacing.md) {
+                Text("What position do you play?")
+                    .font(Theme.Typography.headline(28))
                     .foregroundStyle(Theme.Colors.textPrimary)
+                    .multilineTextAlignment(.center)
                     .accessibilityAddTraits(.isHeader)
                 
-                Text("Each position has elite-level metrics we'll track for you.")
-                    .font(Theme.Typography.subhead(17))
+                Text("Each position has specific stats we'll track for you")
+                    .font(Theme.Typography.body(16))
                     .foregroundStyle(Theme.Colors.textSecondary)
-                    .fixedSize(horizontal: false, vertical: true)
+                    .multilineTextAlignment(.center)
+            }
+            
+            // MARK: - Position Grid (2x3 layout)
+            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: Theme.Spacing.md), count: 2), spacing: Theme.Spacing.md) {
+                ForEach(getPositionsForGender()) { position in
+                    PositionSelectionCard(
+                        position: position,
+                        isSelected: viewModel.position == position.name,
+                        action: {
+                            viewModel.position = position.name
+                            print("[StatLocker][Onboarding] Position selected: \(position.name)")
+                        }
+                    )
+                }
             }
             .padding(.horizontal, Theme.Spacing.xl)
-            .padding(.top, Theme.Spacing.xxl)
-            .padding(.bottom, Theme.Spacing.xl)
             
             Spacer()
-                .frame(height: Theme.Spacing.xl)
-            
-            // MARK: - Position Grid
-            
-            ScrollView {
-                LazyVGrid(columns: [
-                    GridItem(.flexible(), spacing: Theme.Spacing.md),
-                    GridItem(.flexible(), spacing: Theme.Spacing.md)
-                ], spacing: Theme.Spacing.md) {
-                    ForEach(getPositionsForGender()) { position in
-                        PositionCard(
-                            position: position,
-                            isSelected: viewModel.position == position.name,
-                            action: {
-                                viewModel.position = position.name
-                                print("[StatLocker][Onboarding] Position selected: \(position.name)")
-                            }
-                        )
-                    }
-                }
-                .padding(.horizontal, Theme.Spacing.xl)
-            }
-            
-            Spacer()
-                .frame(height: Theme.Spacing.md)
         }
+        .padding(Theme.Spacing.xl)
+        .background(Theme.Colors.backgroundPrimary)
     }
     
     // MARK: - Position Helpers
@@ -131,13 +121,73 @@ struct Step4PositionView: View {
     ]
 }
 
+// MARK: - Position Option Model
+
+struct PositionOption: Identifiable {
+    let id = UUID()
+    let name: String
+    let icon: String
+    let trackedStats: String
+}
+
+// MARK: - Position Selection Card Component
+
+struct PositionSelectionCard: View {
+    let position: PositionOption
+    let isSelected: Bool
+    let action: () -> Void
+    
+    var body: some View {
+        Button(action: action) {
+            VStack(spacing: Theme.Spacing.md) {
+                // Position Icon
+                Image(systemName: position.icon)
+                    .font(.system(size: 32))
+                    .foregroundStyle(Theme.Colors.primary)
+                
+                // Position Name
+                Text(position.name)
+                    .font(Theme.Typography.title(16))
+                    .foregroundStyle(Theme.Colors.textPrimary)
+                    .fontWeight(isSelected ? .semibold : .medium)
+                    .multilineTextAlignment(.center)
+                
+                // Tracked Stats (smaller text)
+                Text(position.trackedStats)
+                    .font(Theme.Typography.caption(11))
+                    .foregroundStyle(Theme.Colors.textSecondary)
+                    .multilineTextAlignment(.center)
+                    .lineLimit(2)
+            }
+            .frame(maxWidth: .infinity, minHeight: 120)
+            .padding(Theme.Spacing.md)
+            .background(
+                RoundedRectangle(cornerRadius: 16)
+                    .fill(Theme.Colors.backgroundSecondary)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 16)
+                            .stroke(
+                                isSelected ? Theme.Colors.primary : Theme.Colors.divider,
+                                lineWidth: isSelected ? 2 : 1
+                            )
+                    )
+            )
+            .scaleEffect(isSelected ? 1.02 : 1.0)
+            .animation(.easeInOut(duration: 0.2), value: isSelected)
+        }
+        .buttonStyle(PlainButtonStyle())
+        .accessibilityLabel("\(position.name) position")
+        .accessibilityHint("Tap to select \(position.name.lowercased()) position")
+        .accessibilityAddTraits(isSelected ? [.isSelected, .isButton] : .isButton)
+    }
+}
+
 // MARK: - Preview
 
 #Preview("Step 4 - Boys") {
     let vm = OnboardingViewModel(userId: "preview", displayName: "John Doe", email: "john@example.com")
     vm.teamGender = "boys"
     return Step4PositionView(viewModel: vm)
-        .background(Theme.Colors.background)
 }
 
 #Preview("Step 4 - Girls with Selection") {
@@ -145,6 +195,5 @@ struct Step4PositionView: View {
     vm.teamGender = "girls"
     vm.position = "Goalie"
     return Step4PositionView(viewModel: vm)
-        .background(Theme.Colors.background)
 }
 

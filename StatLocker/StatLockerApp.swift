@@ -86,7 +86,7 @@ struct RootCoordinatorView: View {
                     }
                 } else if showDashboard {
                     if let profile = athleteProfile, let team = teamInfo {
-                        DashboardView(profile: profile, teamInfo: team)
+                        MainTabView(profile: profile, teamInfo: team)
                     } else {
                         // Fallback loading state
                         VStack {

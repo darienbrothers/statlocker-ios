@@ -457,8 +457,8 @@ struct AuthView: View {
             do {
                 isLoading = true
                 if isSignUp {
-                    print("[StatLocker][Auth] Creating account with email: \(email)")
-                    _ = try await authService.signUpWithEmail(email: email, password: password)
+                    print("[StatLocker][Auth] Creating account with email: \(email), name: \(firstName) \(lastName)")
+                    _ = try await authService.signUpWithEmail(email: email, password: password, firstName: firstName, lastName: lastName)
                 } else {
                     print("[StatLocker][Auth] Signing in with email: \(email)")
                     _ = try await authService.signInWithEmail(email: email, password: password)

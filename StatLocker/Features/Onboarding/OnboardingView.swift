@@ -30,23 +30,15 @@ struct OnboardingView: View {
         VStack(spacing: 0) {
             
             // MARK: - Progress Bar
-            
-            VStack(spacing: Theme.Spacing.xs) {
-                // Progress Label
-                Text(coordinator.progressLabel)
-                    .font(Theme.Typography.caption(12))
-                    .foregroundStyle(Theme.Colors.muted)
-                    .frame(maxWidth: .infinity, alignment: .center)
-                    .padding(.top, Theme.Spacing.md)
-                
-                // Segmented Progress Bar
-                SegmentedProgressBar(currentStep: coordinator.currentStep, totalSteps: 8)
-            }
+            OnboardingProgressBar(currentStep: coordinator.currentStep + 1, totalSteps: 9)
             
             // MARK: - Step Content
             
             ZStack {
                 switch coordinator.currentStep {
+                case 0:
+                    Step0ProfilePictureView(viewModel: coordinator.viewModel)
+                        .transition(.asymmetric(insertion: .move(edge: .trailing), removal: .move(edge: .leading)))
                 case 1:
                     Step1SportSelectionView(viewModel: coordinator.viewModel)
                         .transition(.asymmetric(insertion: .move(edge: .trailing), removal: .move(edge: .leading)))
@@ -130,7 +122,7 @@ struct OnboardingView: View {
                 }
                 .padding(.vertical, Theme.Spacing.md)
         }
-        .background(Theme.Colors.background)
+        .background(Theme.Colors.backgroundPrimary)
         .onChange(of: coordinator.isCompleted) { oldValue, newValue in
             if newValue {
                 print("[StatLocker][Onboarding] Flow completed, dismissing")

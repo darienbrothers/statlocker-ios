@@ -21,65 +21,51 @@ struct Step1SportSelectionView: View {
     ]
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
+        VStack(spacing: Theme.Spacing.xl) {
+            Spacer()
             
             // MARK: - Header
-            
-            VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
-                Text("Ready to dominate, \(viewModel.displayName)?")
-                    .font(Theme.Typography.headline(32))
+            VStack(spacing: Theme.Spacing.md) {
+                Text("What sport do you play?")
+                    .font(Theme.Typography.headline(28))
                     .foregroundStyle(Theme.Colors.textPrimary)
+                    .multilineTextAlignment(.center)
                     .accessibilityAddTraits(.isHeader)
                 
-                Text("Choose your sport and unlock your athletic potential.")
-                    .font(Theme.Typography.subhead(17))
+                Text("Choose your sport to get started")
+                    .font(Theme.Typography.body(16))
                     .foregroundStyle(Theme.Colors.textSecondary)
-                    .fixedSize(horizontal: false, vertical: true)
+                    .multilineTextAlignment(.center)
+            }
+            
+            // MARK: - Sports Grid (2x2 layout)
+            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: Theme.Spacing.md), count: 2), spacing: Theme.Spacing.md) {
+                ForEach(sports) { sport in
+                    SportSelectionCard(
+                        sport: sport,
+                        isSelected: viewModel.sport == sport.id,
+                        action: {
+                            if sport.isUnlocked {
+                                viewModel.sport = sport.id
+                                print("[StatLocker][Onboarding] Selected sport: \(sport.name)")
+                            }
+                        }
+                    )
+                }
             }
             .padding(.horizontal, Theme.Spacing.xl)
-            .padding(.top, Theme.Spacing.xxl)
-            .padding(.bottom, Theme.Spacing.xl)
             
             Spacer()
-                .frame(height: Theme.Spacing.xl)
-            
-            // MARK: - Sports List
-            
-            ScrollView {
-                VStack(spacing: Theme.Spacing.sm) {
-                    ForEach(sports) { sport in
-                        BorderedSelectionCard(
-                            title: "\(sport.icon) \(sport.name)",
-                            subtitle: sport.isUnlocked ? "Available now" : "Coming soon",
-                            isSelected: viewModel.sport == sport.id,
-                            action: {
-                                if sport.isUnlocked {
-                                    viewModel.sport = sport.id
-                                    print("[StatLocker][Onboarding] Selected sport: \(sport.name)")
-                                }
-                            }
-                        )
-                        .disabled(!sport.isUnlocked)
-                        .opacity(sport.isUnlocked ? 1.0 : 0.6)
-                    }
-                }
-                .padding(.horizontal, Theme.Spacing.xl)
-            }
-            
-            Spacer()
-                .frame(height: Theme.Spacing.md)
             
             // MARK: - Helper Text
-            
             Text("We're launching with lacrosse — more sports coming soon!")
                 .font(Theme.Typography.caption(14))
-                .foregroundStyle(Theme.Colors.muted)
+                .foregroundStyle(Theme.Colors.textTertiary)
                 .multilineTextAlignment(.center)
-                .frame(maxWidth: .infinity)
                 .padding(.horizontal, Theme.Spacing.xl)
-            
-            Spacer()
         }
+        .padding(Theme.Spacing.xl)
+        .background(Theme.Colors.backgroundPrimary)
     }
 }
 
@@ -92,9 +78,9 @@ struct SportOption: Identifiable {
     let isUnlocked: Bool
 }
 
-// MARK: - Sport Card Component
+// MARK: - Sport Selection Card Component
 
-struct SportCard: View {
+struct SportSelectionCard: View {
     let sport: SportOption
     let isSelected: Bool
     let action: () -> Void
@@ -102,61 +88,49 @@ struct SportCard: View {
     var body: some View {
         Button(action: action) {
             VStack(spacing: Theme.Spacing.md) {
-                
-                // Icon with lock overlay if locked
-                ZStack {
-                    Text(sport.icon)
-                        .font(.system(size: 48))
-                        .opacity(sport.isUnlocked ? 1.0 : 0.3)
-                    
-                    if !sport.isUnlocked {
-                        Image(systemName: "lock.fill")
-                            .font(.system(size: 20))
-                            .foregroundStyle(Theme.Colors.muted)
-                    }
-                }
-                .frame(height: 60)
+                // Sport Icon
+                Text(sport.icon)
+                    .font(.system(size: 40))
+                    .opacity(sport.isUnlocked ? 1.0 : 0.4)
                 
                 // Sport Name
-                VStack(spacing: Theme.Spacing.xxs) {
-                    Text(sport.name)
-                        .font(Theme.Typography.body(15))
-                        .fontWeight(isSelected ? .semibold : .medium)
-                        .foregroundStyle(sport.isUnlocked ? Theme.Colors.textPrimary : Theme.Colors.muted)
-                    
-                    if !sport.isUnlocked {
-                        Text("Coming Soon")
-                            .font(Theme.Typography.caption(11))
-                            .foregroundStyle(Theme.Colors.muted)
-                            .padding(.horizontal, Theme.Spacing.xs)
-                            .padding(.vertical, 2)
-                            .background(
-                                Capsule()
-                                    .fill(Theme.Colors.muted.opacity(0.1))
-                            )
-                    }
+                Text(sport.name)
+                    .font(Theme.Typography.title(18))
+                    .foregroundStyle(sport.isUnlocked ? Theme.Colors.textPrimary : Theme.Colors.textTertiary)
+                    .multilineTextAlignment(.center)
+                
+                // Status Badge
+                if !sport.isUnlocked {
+                    Text("Coming Soon")
+                        .font(Theme.Typography.caption(12))
+                        .foregroundStyle(Theme.Colors.textSecondary)
+                        .padding(.horizontal, Theme.Spacing.sm)
+                        .padding(.vertical, Theme.Spacing.xs)
+                        .background(Theme.Colors.backgroundTertiary)
+                        .clipShape(Capsule())
                 }
             }
-            .frame(maxWidth: .infinity)
-            .frame(height: 140)
-            .padding(.vertical, Theme.Spacing.md)
+            .frame(maxWidth: .infinity, minHeight: 120)
+            .padding(Theme.Spacing.lg)
             .background(
-                RoundedRectangle(cornerRadius: 16, style: .continuous)
-                    .fill(sport.isUnlocked ? Theme.Colors.cardSurface : Theme.Colors.cardSurface.opacity(0.5))
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: 16, style: .continuous)
-                    .stroke(
-                        isSelected ? Theme.Colors.accentEmerald : (sport.isUnlocked ? Theme.Colors.divider : Theme.Colors.divider.opacity(0.5)),
-                        lineWidth: isSelected ? 2 : 1
+                RoundedRectangle(cornerRadius: 16)
+                    .fill(Theme.Colors.backgroundSecondary)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 16)
+                            .stroke(
+                                isSelected ? Theme.Colors.primary : Theme.Colors.divider,
+                                lineWidth: isSelected ? 2 : 1
+                            )
                     )
             )
+            .scaleEffect(isSelected ? 1.02 : 1.0)
+            .opacity(sport.isUnlocked ? 1.0 : 0.6)
+            .animation(.easeInOut(duration: 0.2), value: isSelected)
         }
-        .buttonStyle(.plain)
+        .buttonStyle(PlainButtonStyle())
         .disabled(!sport.isUnlocked)
-        .accessibilityLabel(sport.name)
-        .accessibilityHint(sport.isUnlocked ? "Tap to select \(sport.name)" : "\(sport.name) coming soon")
-        .accessibilityAddTraits(sport.isUnlocked ? (isSelected ? [.isSelected, .isButton] : .isButton) : [])
+        .accessibilityLabel("\(sport.name) sport option")
+        .accessibilityHint(sport.isUnlocked ? "Tap to select" : "Coming soon")
     }
 }
 
@@ -164,13 +138,11 @@ struct SportCard: View {
 
 #Preview("Step 1 - Default") {
     Step1SportSelectionView(viewModel: OnboardingViewModel(userId: "preview", displayName: "John Doe", email: "john@example.com"))
-        .background(Theme.Colors.background)
 }
 
 #Preview("Step 1 - Lacrosse Selected") {
     let vm = OnboardingViewModel(userId: "preview", displayName: "John Doe", email: "john@example.com")
     vm.sport = "lacrosse"
     return Step1SportSelectionView(viewModel: vm)
-        .background(Theme.Colors.background)
 }
 

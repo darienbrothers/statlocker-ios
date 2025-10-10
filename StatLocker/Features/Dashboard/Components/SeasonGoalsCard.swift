@@ -13,43 +13,66 @@ struct SeasonGoalsCard: View {
     @State private var showGoalsSheet = false
     
     var body: some View {
-        VStack(alignment: .leading, spacing: Theme.Spacing.md) {
-            HStack {
-                Label("Season Goals", systemImage: "target")
+        VStack(alignment: .leading, spacing: Theme.Spacing.lg) {
+            // Header
+            HStack(spacing: Theme.Spacing.sm) {
+                Image(systemName: "target")
+                    .font(.system(size: 16))
+                    .foregroundStyle(Theme.Colors.primary)
+                
+                Text("Season Goals")
                     .font(Theme.Typography.title(18))
+                    .fontWeight(.semibold)
                     .foregroundStyle(Theme.Colors.textPrimary)
                 
                 Spacer()
                 
-                Button("Manage") {
+                Button {
                     showGoalsSheet = true
                     print("[StatLocker][Dashboard] Goals manage button tapped")
+                } label: {
+                    Text("Manage")
+                        .font(Theme.Typography.body(14))
+                        .fontWeight(.medium)
+                        .foregroundStyle(Theme.Colors.primary)
                 }
-                .font(Theme.Typography.body(15))
-                .foregroundStyle(Theme.Colors.primary)
                 .accessibilityLabel("Manage season goals")
             }
             
-            HStack(spacing: Theme.Spacing.lg) {
-                ForEach(goals.prefix(3)) { goal in
-                    CircularGoalProgress(goal: goal)
+            // Goals Progress Rings
+            if goals.isEmpty {
+                VStack(spacing: Theme.Spacing.md) {
+                    Image(systemName: "target")
+                        .font(.system(size: 40))
+                        .foregroundStyle(Theme.Colors.textTertiary)
+                    
+                    Text("Set your season goals")
+                        .font(Theme.Typography.body(15))
+                        .foregroundStyle(Theme.Colors.textSecondary)
+                    
+                    Text("Tap Manage to get started")
+                        .font(Theme.Typography.caption(13))
+                        .foregroundStyle(Theme.Colors.textTertiary)
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, Theme.Spacing.xl)
+            } else {
+                HStack(spacing: Theme.Spacing.md) {
+                    ForEach(goals.prefix(3)) { goal in
+                        CircularGoalProgress(goal: goal)
+                    }
                 }
             }
-            
-            if goals.isEmpty {
-                Text("Start logging games to track progress")
-                    .font(Theme.Typography.caption())
-                    .foregroundStyle(Theme.Colors.textSecondary)
-            } else {
-                Text("On track • Tap to expand full view")
-                    .font(Theme.Typography.caption())
-                    .foregroundStyle(Theme.Colors.textSecondary)
-            }
         }
-        .padding(Theme.Spacing.md)
-        .background(Theme.Colors.cardSurface)
-        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-        .themedShadow(Theme.Shadows.card)
+        .padding(Theme.Spacing.lg)
+        .background(
+            RoundedRectangle(cornerRadius: 20)
+                .fill(Theme.Colors.backgroundSecondary)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 20)
+                .stroke(Theme.Colors.divider, lineWidth: 1)
+        )
         .onTapGesture {
             showGoalsSheet = true
             print("[StatLocker][Dashboard] Season goals card tapped")
@@ -68,36 +91,51 @@ struct CircularGoalProgress: View {
     let goal: SeasonGoal
     
     var body: some View {
-        VStack(spacing: 8) {
+        VStack(spacing: Theme.Spacing.xs) {
             ZStack {
+                // Background ring
                 Circle()
-                    .stroke(Theme.Colors.divider, lineWidth: 6)
+                    .stroke(Theme.Colors.divider.opacity(0.3), lineWidth: 8)
                 
+                // Progress ring with gradient
                 Circle()
                     .trim(from: 0, to: goal.progress)
-                    .stroke(statusColor, lineWidth: 6)
+                    .stroke(
+                        AngularGradient(
+                            gradient: Gradient(colors: [statusColor.opacity(0.6), statusColor]),
+                            center: .center,
+                            startAngle: .degrees(-90),
+                            endAngle: .degrees(270 * goal.progress - 90)
+                        ),
+                        style: StrokeStyle(lineWidth: 8, lineCap: .round)
+                    )
                     .rotationEffect(.degrees(-90))
+                    .animation(.easeInOut(duration: 0.6), value: goal.progress)
                 
+                // Center text
                 VStack(spacing: 2) {
                     Text("\(Int(goal.currentValue))")
-                        .font(Theme.Typography.number(16))
+                        .font(Theme.Typography.number(18, weight: .bold))
                         .foregroundStyle(Theme.Colors.textPrimary)
                     Text("/\(Int(goal.targetValue))")
-                        .font(Theme.Typography.caption(12))
-                        .foregroundStyle(Theme.Colors.textSecondary)
+                        .font(Theme.Typography.caption(11))
+                        .foregroundStyle(Theme.Colors.textTertiary)
                 }
             }
-            .frame(width: 80, height: 80)
+            .frame(width: 90, height: 90)
             
-            Text(goal.title.prefix(10) + (goal.title.count > 10 ? "..." : ""))
-                .font(Theme.Typography.caption(13))
-                .foregroundStyle(Theme.Colors.textSecondary)
-                .lineLimit(1)
-            
-            Text("\(goal.progressPercent)%")
-                .font(Theme.Typography.number(14, weight: .semibold))
-                .foregroundStyle(statusColor)
+            VStack(spacing: 2) {
+                Text(goal.title.prefix(12) + (goal.title.count > 12 ? "..." : ""))
+                    .font(Theme.Typography.caption(12))
+                    .foregroundStyle(Theme.Colors.textSecondary)
+                    .lineLimit(1)
+                
+                Text("\(goal.progressPercent)%")
+                    .font(Theme.Typography.number(14, weight: .bold))
+                    .foregroundStyle(statusColor)
+            }
         }
+        .frame(maxWidth: .infinity)
         .accessibilityElement(children: .combine)
         .accessibilityLabel("\(goal.title): \(goal.progressPercent)% complete")
     }
@@ -146,5 +184,5 @@ struct CircularGoalProgress: View {
     
     SeasonGoalsCard(goals: sampleGoals)
         .padding()
-        .background(Theme.Colors.background)
+        .background(Theme.Colors.backgroundPrimary)
 }
